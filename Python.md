@@ -166,4 +166,26 @@
 
    程序休眠：`sleep(s)` ，s可以是浮点数
 
-2. 
+2. 文本进度条设计函数
+
+   ```python
+   import time
+   scale=50
+   print("begin".center(scale//2,'-'))
+   start=time.perf_counter()
+   for i in range(scale+1):
+       a='*'*i
+       b='.'*(scale-i)
+       c=(i/scale)*100
+       dur=time.perf_counter()-start
+       print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
+       time.sleep(0.1)
+   print("\n"+"end".center(scale//2,'-'))
+   ```
+
+   
+
+   ![image-20191210163122555](TyporaPics/image-20191210163122555.png)
+
+## 程序控制结构
+

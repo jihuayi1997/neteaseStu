@@ -2,7 +2,7 @@
 
 ## Neural Network
 
-### Summary
+### 1. Summary
 
 Supervised Learning
 
@@ -29,7 +29,7 @@ Scale drives deep learning progress
 * Computation
 * Algorithms : sigmod...rectified linear unit (ReLU)
 
-### Basic
+### 2. Basic
 
 #### Notation
 
@@ -59,3 +59,8 @@ Scale drives deep learning progress
 
 ![image-20191209134050676](TyporaPics/image-20191209134050676.png)
 
+#### Gradient Descent
+
+![image-20191210173211289](TyporaPics/image-20191210173211289.png)
+
+* w := w-α

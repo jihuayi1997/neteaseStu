@@ -1,5 +1,7 @@
 # 多线程编程
 
+## 基础概念
+
 进程：
 
 线程：
@@ -10,7 +12,7 @@
 
 ***
 
-C++11创建多线程
+## 创建多线程
 
 ```c++
 #include<thread>
@@ -23,7 +25,7 @@ int main(){
 	void operator()(){};
 
 	//线程用法
-	thread myThread1();
+	thread myThread1(可执行对象);
 	if(myThread1.joinable()){
         myThread1.join();
 		myThread1.detach();
@@ -34,11 +36,58 @@ int main(){
 
 ***
 
-要将参数传递给线程的函数，只需要将参数传递给thread的构造函数，默认情况下所有的参数都将复制到新线程的内部存储中。即使线程函数接收引用作为参数，但不会影响main中的值，因为线程函数的引用是复制再新线程的堆栈中的临时值，若需要深copy使用std::ref，例：`thread threadObj(threadCallback,ref(x));`
+## 线程参数传递
+
+要将参数传递给线程函数，只需要将参数传递给thread的构造函数，默认情况下所有的参数都将复制到新线程的内部存储中。
+
+若线程函数接收引用作为参数，必须加const，而且线程函数的引用是复制在新线程的堆栈中的临时值。
+
+```c++
+#include<iostream>
+#include<thread>
+using namespace std;
+void add(const int &a) {
+	int& x = const_cast<int&>(a);
+	x = x + 1;
+	cout << a << endl;			//2
+}
+int main()
+{
+	int a = 1;
+	cout << a << endl;			//1
+	thread thread1(add,a);
+	thread1.join();
+	cout << a ;					//1
+	return 0;
+}
+```
+
+若需要传递引用，使用std::ref。
+
+```c++
+#include<iostream>
+#include<thread>
+using namespace std;
+void add(int &a) {
+	a = a + 1;
+	cout << a << endl;			//2
+}
+int main()
+{
+	int a = 1;
+	cout << a << endl;			//1
+	thread thread1(add,ref(a);
+	thread1.join();
+	cout << a ;					//2
+	return 0;
+}
+```
+
+
 
 ***
 
-C++11线程加锁
+## 线程加锁
 
  ```c++
 #include<mutex>
@@ -60,7 +109,7 @@ public:
 
 ***
 
-有时会发生函数结束忘记释放锁，所以可以使用lock_guard，这是一个模板类，位mutex实现RALL，它将mutex包裹在他的对象内。
+有时会发生函数结束忘记释放锁，所以可以使用lock_guard，这是一个模板类，为mutex实现RALL，它将mutex包裹在他的对象内。
 
 ```C++ 
 class Wallet {   
@@ -81,7 +130,7 @@ public:
 
 ***
 
-C++11条件变量
+## 条件变量
 
 `#include<condition_variable>`
 
