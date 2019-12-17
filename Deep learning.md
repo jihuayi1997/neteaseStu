@@ -63,4 +63,7 @@ Scale drives deep learning progress
 
 ![image-20191210173211289](TyporaPics/image-20191210173211289.png)
 
-* w := w-α
+* w := w-α*∂J(w,b)/∂w...dw
+* b := b-α*∂J(w,b)/∂b...db
+
+#### Computation Graph
