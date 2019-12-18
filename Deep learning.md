@@ -66,4 +66,38 @@ Scale drives deep learning progress
 * w := w-α*∂J(w,b)/∂w...dw
 * b := b-α*∂J(w,b)/∂b...db
 
-#### Computation Graph
+#### Logistic Regression Gradient descent
+
+*computing derivatives*
+
+![image-20191218115506169](TyporaPics/image-20191218115506169.png)
+
+*on m examples*
+
+![image-20191218115616494](TyporaPics/image-20191218115616494.png)
+
+*one single step of gradient descent*
+
+![image-20191218121327277](TyporaPics/image-20191218121327277.png)
+
+#### Vectorization
+
+```python
+import time
+a=np.random.rand(1000000)
+b=np.random.rand(1000000)
+tic=time.perf_counter()
+c=np.dot(a,b)
+toc=time.perf_counter()
+print(c)
+print("Vectorized version:"+str(1000*(toc-tic))+"ms")	//≈1.3ms
+
+c=0
+tic=time.perf_counter()
+for i in range(1000000):
+    c+=a[i]*b[i]
+toc=time.perf_counter()
+print(c)
+print("For loop:"+str(1000*(toc-tic))+"ms")				//≈300ms
+```
+
