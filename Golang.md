@@ -250,3 +250,10 @@ func main() {
 
 ### 函数
 
+```go
+func calculate(x,y int, m string) (ret int){
+    ret = x+y
+    return
+}
+```
+
