@@ -43,3 +43,7 @@ int main(){
 ***
 
 三个***是上面的分割线哦
+
+| name | type | description |
+| :- | :-: | -: |
+| left | mid | right |

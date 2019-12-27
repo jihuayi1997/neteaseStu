@@ -62,12 +62,6 @@
 
 ## 基础语法
 
-1. 循环语句：`for i in range(5):`
-
-   `range(N)`：产生0到N-1整数序列，共N个
-
-   `range(M,N)`：产生M到N-1整数序列，共N-M个
-
 2. 整数类型：没取值范围限制
 
    二进制：0b010，-0B101
@@ -146,7 +140,7 @@
 
    去掉开头和结尾指定字符们：`str.strip(chars)`，lstrip()和rstrip()分别去掉开头与结尾
 
-   iter变量除最后元素外每个元素后增加个str：`str.join(iter)`
+   iter变量除最后元素外每个元素后增加个str：`str.join(iter)`，主要用于字符串分隔
 
 10. 槽的格式控制：
 
@@ -178,14 +172,38 @@
        b='.'*(scale-i)
        c=(i/scale)*100
        dur=time.perf_counter()-start
+       #其中\r表示光标回到行首，end=''表示不换行
        print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
        time.sleep(0.1)
    print("\n"+"end".center(scale//2,'-'))
-   ```
-
+```
    
 
+   
    ![image-20191210163122555](TyporaPics/image-20191210163122555.png)
 
 ## 程序控制结构
 
+1. 分支结构
+
+   ```python
+   # -*- coding: utf-8 -*-
+   score=eval(input())
+   if score>=90:
+       grade='A'
+   elif score>=80:
+       grade='B'
+   elif score>=70:
+       grade='C'
+   else:
+       grade='D'
+   print("成绩等级为{}".format(grade))
+   ```
+
+   双分支
+
+2. 循环语句：`for i in range(5):`
+
+   `range(N)`：产生0到N-1整数序列，共N个
+
+   `range(M,N)`：产生M到N-1整数序列，共N-M个
