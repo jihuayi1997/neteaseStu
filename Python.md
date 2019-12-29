@@ -176,11 +176,9 @@
        print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
        time.sleep(0.1)
    print("\n"+"end".center(scale//2,'-'))
-```
+   ```
    
-
-   
-   ![image-20191210163122555](TyporaPics/image-20191210163122555.png)
+![image-20191210163122555](TyporaPics/image-20191210163122555.png)
 
 ## 程序控制结构
 

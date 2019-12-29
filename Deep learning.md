@@ -101,3 +101,19 @@ print(c)
 print("For loop:"+str(1000*(toc-tic))+"ms")				//≈300ms
 ```
 
+常用numpy库函数：
+
+计算各元素指数值：`np.exp(v)`
+
+计算各元素对数值：`np.log10(v)`
+
+比较最大值：`np.maximum(v,0)`
+
+返回最大的元素：`np.max(v)`
+
+#### Vectorizing Logistic Regression's Gradient Computation
+
+![image-20191229212136824](TyporaPics/image-20191229212136824.png)
+
+#### Broadcasting
+
