@@ -84,13 +84,13 @@ Scale drives deep learning progress
 
 ```python
 import time
-a=np.random.rand(1000000)
+a=np.random.rand(1000000)								#1000000维的数组
 b=np.random.rand(1000000)
 tic=time.perf_counter()
 c=np.dot(a,b)
 toc=time.perf_counter()
 print(c)
-print("Vectorized version:"+str(1000*(toc-tic))+"ms")	//≈1.3ms
+print("Vectorized version:"+str(1000*(toc-tic))+"ms")	#≈1.3ms
 
 c=0
 tic=time.perf_counter()
@@ -98,7 +98,7 @@ for i in range(1000000):
     c+=a[i]*b[i]
 toc=time.perf_counter()
 print(c)
-print("For loop:"+str(1000*(toc-tic))+"ms")				//≈300ms
+print("For loop:"+str(1000*(toc-tic))+"ms")				#≈300ms
 ```
 
 常用numpy库函数：
@@ -116,4 +116,27 @@ print("For loop:"+str(1000*(toc-tic))+"ms")				//≈300ms
 ![image-20191229212136824](TyporaPics/image-20191229212136824.png)
 
 #### Broadcasting
+
+Matrix(m,n) 加减乘除 Matrix(m,1) or Matrix(1,n)...后者复制 n or m 次，再运算
+
+Matrix(1,n) or Matrix(m,1) 加减乘除 实数...后者复制 m or n 次，再运算
+
+```python
+import numpy as np
+A=np.array([[56.0,0.0,4.4,68.0],
+           [1.2,104.0,52.0,8.0],
+           [1.8,135.0,99.0,0.9]])
+cal=A.sum(axis=0)						#A竖直求和，如需水平求和令axis=1
+percentage=100*A/cal.reshape(1,4)		#.reshape(1,4)可忽略，但无需吝啬使用
+```
+
+```python
+import numpy as np
+a=np.random.randn(5)					#a.shape=(5,)...rank 1 array
+a=np.random.randn(5,1)					#a.shape=(5,1)...Matrix(column vector)
+a=np.random.randn(1,5)					#a.shape=(1,5)...Matrix(row vector)
+assert(a.shape==(5,1))					#确保Matrix形状，无需吝啬使用
+```
+
+### One hidden layer Neural Network
 

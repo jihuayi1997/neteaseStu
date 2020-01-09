@@ -177,7 +177,7 @@
        time.sleep(0.1)
    print("\n"+"end".center(scale//2,'-'))
    ```
-   
+
 ![image-20191210163122555](TyporaPics/image-20191210163122555.png)
 
 ## 程序控制结构
@@ -186,22 +186,76 @@
 
    ```python
    # -*- coding: utf-8 -*-
-   score=eval(input())
-   if score>=90:
-       grade='A'
-   elif score>=80:
-       grade='B'
-   elif score>=70:
-       grade='C'
-   else:
-       grade='D'
-   print("成绩等级为{}".format(grade))
+   try:
+       score=eval(input())
+       if score>=90:
+           grade='A'
+       elif score>=80:
+           grade='B'
+       elif score>=70:
+           grade='C'
+       else:
+           grade='D'
+       print("成绩等级为{}".format(grade))
+   except NameError:
+       print("输入的不是整数！")
+   except SyntaxError:
+       print("没有输入！")
+   else:										#else正常执行的奖励（无异常）
+       print("程序正常执行。")
    ```
 
-   双分支
+   二分支可以写成紧凑结构（但对应的只可以是表达式不可以是语句）
 
-2. 循环语句：`for i in range(5):`
+   `print("猜{}了".format("对" if guess==99 else "错"))`
 
-   `range(N)`：产生0到N-1整数序列，共N个
+2. 循环结构
 
-   `range(M,N)`：产生M到N-1整数序列，共N-M个
+   计数循环：`for i in range(M,N,K) :`（产生M到N-1整数序列，步长为K）
+
+   字符串遍历循环：`for c in range s :`（s是字符串，遍历字符串每个字符，产生循环）
+
+   列表遍历循环：`for item in range ls :`（ls是一个列表，遍历其每个元素，产生循环）
+
+   文件遍历循环：`for line in range fi :`（fi是一个文件标识符，遍历其每行，产生循环）
+
+   支持元组，字典遍历循环
+
+   支持while条件循环
+
+   支持break,continue,else(正常执行的奖励(无break))
+
+## random库
+
+`random.seed(a=None)`：初始化随机数种子，默认为当前系统时间
+
+`random.random()`：生成一个[0.0,1.0)之间的小数
+
+`random.randint(a,b)`：生成一个[a,b]之间的整数
+
+`random.uniform(a,b)`：生成一个[a,b]之间的小数
+
+`random.randrange(m,n[,k])`：生成一个[m,n)之间以k为步长的整数
+
+`random.getrandbits(k)`：生成一个k比特长的整数
+
+`random.choice(seq)`：从seq序列中选择一个元素
+
+`random.shuffle(seq)`：将seq序列随机重新排列
+
+```python
+#蒙特卡罗方法计算圆周率
+import random as rd
+DARTS=1000*1000
+hits=0.0
+for i in range(1,DARTS+1):
+    x,y=rd.random(),rd.random()
+    dist=pow(x**2+y**2,0.5)
+    if dist<=1.0:
+        hits+=1
+pi=4*hits/DARTS
+print("圆周率值为：{}".format(pi))
+```
+
+## 函数
+
