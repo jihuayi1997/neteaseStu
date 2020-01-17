@@ -46,7 +46,9 @@
 
 11. 丢弃工作区的修改：
 
-    `git checkout -- readme.txt`（回到暂存区/版本库状态）
+    `git checkout -- readme.txt`（单个文件回到暂存区/版本库状态）
+
+    `git checkout .`（全部文件回到暂存区/版本库状态）
 
 12. 从版本库删除文件：
 
@@ -171,6 +173,10 @@
 37. 配置别名：（全局：uer/.gitconfig 非全局：.git/config）
 
     `git config --global alias.unstage ‘reset HEAD’`
+
+    `git config --global alias.pullall '!git pull && git submodule update --init --recursive'`
+
+    `git config --global alias.st 'status'`
 
 38. 子模块更新：
 

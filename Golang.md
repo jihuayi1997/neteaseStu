@@ -251,9 +251,12 @@ func main() {
 ### 函数
 
 ```go
-func calculate(x,y int, m string) (ret int){
-    ret = x+y
+func calculate(x,y int, m string) (ret1 int, ret2 string){
+    ret1 = x+y
+    ret2 = m
     return
 }
 ```
+
+支持类型简写，可变长参数（参数名后加`...`），多返回值
 
