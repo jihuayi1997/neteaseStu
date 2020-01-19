@@ -1,5 +1,7 @@
 # Golang语法
 
+## 基础语法
+
 ### 入门
 
 go目录：bin，pkg，src
@@ -81,11 +83,15 @@ go不可以直接修改字符串内容，若需要修改先转成切片然后建
 
 字符：uint8--byte(ASCII)，int32--rune(UTF-8)
 
+判断字符是否为中文：`flag:=unicode.Is(unicode.Han)`
+
 ### 数组
+
+初始化：`arr := [...][2]int{{1,2},{3,4},{5,6}}`
 
 数组长度必须是常量，长度是数组类型的一部分，大小不可修改
 
-Go语言支持多维数组，但多维数组只有第一层可以使用`...`来让编译器推导长度
+Go语言支持多维数组，但多维数组只有最外层可以使用`...`来让编译器推导长度
 
 数组是值类型，赋值传参会复制整个数组，改变副本不影响本身
 
@@ -113,7 +119,7 @@ s2 := []int{}        //构造整型切片，len(s2)=0;cap(s2)=0;s2!=nil
 s3 := make([]int, 0) //构造整型切片，len(s3)=0;cap(s3)=0;s3!=nil
 ```
 
-构造切片：直接构造；基于数组构造切片；切片再切片；`make([]T,size,cap)`，其中`cap`默认`==size`
+构造切片：直接构造；基于数组构造切片；切片再切片；`make([]T,size,cap)`，其中`cap`默认`==len`
 
 切片长度：`len(a)`，元素个数
 
@@ -121,7 +127,7 @@ s3 := make([]int, 0) //构造整型切片，len(s3)=0;cap(s3)=0;s3!=nil
 
 判断切片是否空：`len(a)==0`而不是`a==nil`
 
-为切片追加元素：`a = append(a,ss...)`
+为切片追加元素：`a = append(a,ss...)`，支持追加到nil
 
 扩容策略：
 
@@ -133,7 +139,7 @@ s3 := make([]int, 0) //构造整型切片，len(s3)=0;cap(s3)=0;s3!=nil
 
 ​	最终容量计算值溢出，则最终容量就是新申请容量
 
-切片的复制：`copy(dest,src)`，可以将一个切片数据复制到另一个切片空间中
+切片的复制：`copy(dest,src)`，可以将一个切片的数据复制到另一个切片空间中
 
 ```go
 func main() {
@@ -190,6 +196,8 @@ func main() {
 new：一般用来给基本数据类型申请内存，返回对应类型指针
 
 make：只用于slice, map, chan的内存创建，返回这三个类型本身
+
+不支持指针运算
 
 ### map
 
@@ -254,9 +262,54 @@ func main() {
 func calculate(x,y int, m string) (ret1 int, ret2 string){
     ret1 = x+y
     ret2 = m
-    return
+    return			//使用命名的返回值，return后面可以省略返回值变量
 }
 ```
 
-支持类型简写，可变长参数（参数名后加`...`），多返回值
+支持类型简写
+
+支持可变长参数：参数名后加`...`，实际类型为切片，放在函数参数的最后
+
+支持多返回值
+
+不支持默认参数
+
+在一个命名函数中不能再声明命名函数
+
+defer语句：把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
+
+```go
+func f1() int {
+	x := 5
+	defer func() {
+		x++
+	}()
+	return x
+}
+func f2() (x int) {
+	defer func() {
+		x++
+	}()
+	return 5
+}
+func f3() (y int) {
+	x := 5
+	defer func() {
+		x++
+	}()
+	return x
+}
+func f4() (x int) {
+	defer func(x int) {
+		x++
+	}(x)
+	return 5
+}
+func main() {
+	fmt.Println(f1())						//5
+	fmt.Println(f2())						//6
+	fmt.Println(f3())						//5
+    fmt.Println(f4())						//5
+}
+```
 
