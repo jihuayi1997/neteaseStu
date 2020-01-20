@@ -276,6 +276,21 @@ func calculate(x,y int, m string) (ret1 int, ret2 string){
 
 在一个命名函数中不能再声明命名函数
 
+```go
+func main(){
+    //正常匿名函数
+    f1:=func(x,y int){
+        fmt.Println(x+y)
+    }
+    //只调用一次也可以简写成立即执行函数
+    func(x,y int){
+        fmt.Println(x+y)
+    }(100,200)
+}
+```
+
+作用域：全局作用域，函数作用域，语句块作用域
+
 defer语句：把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
 
 ```go
@@ -313,3 +328,15 @@ func main() {
 }
 ```
 
+函数类型：可以作为参数和返回值
+
+```go
+func f1(x func() int) func(int, int) int {	//参数类型func()int，返回值类型func(int,int)int
+    ret := func(a,b int)int{
+        return a + b
+    }
+    return ret
+}
+```
+
+闭包：
