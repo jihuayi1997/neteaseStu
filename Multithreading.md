@@ -6,9 +6,9 @@
 
 线程：
 
-并发：
+并发：两个或多个事件在同一时间间隔内发生
 
-并行：
+并行：两个或多个事件在同一时刻发生
 
 ***
 
@@ -19,11 +19,11 @@
 using namespace std;
 int main(){
     //创建可执行对象
-	void x1(){};
-	auto x2=[]{};
-	class x3{
-	void operator()(){};
-
+	void x1(){};	//可以是函数
+	auto x2=[]{};	//可以是lambda表达式
+	class x3{		//可以是类对象（需运算符重载）
+		void operator()(){};
+    };
 	//线程用法
 	thread myThread1(可执行对象);
 	if(myThread1.joinable()){

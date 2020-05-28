@@ -7,7 +7,7 @@
 Supervised Learning
 
 * Standard Neural Net
-  * Read Estate : Home features...Price
+  * Real Estate : Home features...Price
   * Online Advertising : Ad,uer info...Click on ad?
 
 * Convolutional Neural Network
