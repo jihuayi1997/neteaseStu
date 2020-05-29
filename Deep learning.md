@@ -138,5 +138,5 @@ a=np.random.randn(1,5)					#a.shape=(1,5)...Matrix(row vector)
 assert(a.shape==(5,1))					#确保Matrix形状，无需吝啬使用
 ```
 
-### One hidden layer Neural Network
+### 3. One hidden layer Neural Network
 
