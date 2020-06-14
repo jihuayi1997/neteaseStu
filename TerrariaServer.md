@@ -28,30 +28,40 @@
 
    `yum -y install "wget" "unzip" "screen" "vim"`
 
-6. 安装泰拉瑞亚服务器：
+6. 安装tshock服务器（可选）：
 
-   `cd /opt`
+   ```shell
+   #安装mono：https://www.mono-project.com/download/stable/#download-lin-centos
+   rpmkeys --import "http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef"
+   su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
+   yum install mono-devel
+   #安装tshock：https://github.com/Pryaxis/TShock/releases
+   unzip TShock4.4.0_Pre11_Terraria1.4.0.5.zip
+   screen mono Terrariaserver.exe
+   ```
 
-   `wget "https://terraria.org/system/dedicated_servers/archives/000/000/037/original/terraria-server-1403.zip"`
+7. 安装官方服务器（可选）：
 
-   ` mkdir /opt/terraria-server #新建一个目录` 
+   ```shell
+   cd /opt
+   wget "https://terraria.org/system/dedicated_servers/archives/000/000/038/original/terraria-server-1404.zip"
+   #新建一个目录
+   mkdir /root/terraria-server
+   #解压
+   unzip terraria-server-1404.zip -d /root/terraria-server
+   #进入到服务器目录中
+   cd /root/terraria-server/1404/Linux
+   #给服务器运行文件设置权限
+   chmod 744 TerrariaServer.bin.x86_64
+   #创建完即可ctrl+a+d进行detach再关闭ssh连接，会话会持续运行
+   screen -S terrariaServer
+   ./TerrariaServer.bin.x86_64 
+   #重连会话
+   screen -R terrariaServer
+   ```
 
-   `unzip terraria-server-1403.zip -d /opt/terraria-server`
-
-   `cd /opt/terraria-server/1403/Linux #进入到服务器目录中`
-
-   `chmod 744 TerrariaServer.bin.x86_64 #给服务器运行文件设置权限`
-
-   `screen -S terrariaServer`
-
-   `./TerrariaServer.bin.x86_64 `
-
-   创建完即可ctrl+a+d进行detach再关闭ssh连接，会话会持续运行
-
-   `screen -R terrariaServer #重连会话`
-   
-7. 服务器传递地图：
+8. 服务器传递地图：
 
    `find / -name 2083Master.wld #查找地图存储位置`
 
-   `scp  /root/.local/share/Terraria/Worlds/2083Master.wld.bak root@47.114.182.39:/home/.local/share/Terraria/Worlds`
+   `scp  /root/.local/share/Terraria/Worlds/2083Master.wld.bak root@175.24.112.197:/root/.local/share/Terraria/Worlds`

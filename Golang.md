@@ -10,6 +10,20 @@ go目录：bin，pkg，src
 
 0x开头：十六进制
 
+若需编译linux可执行文件
+
+```shell
+set GOOS=linux
+set GOARCH=amd64
+go build
+```
+
+```powershell
+$env:GOOS="linux"
+$env:GOARCH="amd64"
+go build
+```
+
 ### 格式控制符
 
 %s 字符串
