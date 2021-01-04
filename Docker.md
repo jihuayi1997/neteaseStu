@@ -57,8 +57,6 @@ sudo systemctl restart docker
 
 ## Docker入门
 
-镜像的结构：registry_name/repository_name/image_name:tag_name
-
 ### 常用命令
 
 ```shell
@@ -70,6 +68,8 @@ docker 命令 --help									   #获取命令帮助信息
 ```
 
 ### 镜像命令
+
+镜像的结构：registry_name/repository_name/image_name:tag_name
 
 ```shell
 docker search alpine										#搜索镜像
@@ -84,11 +84,18 @@ docker save a4c0051da706 > alpine-latest_with_1.txt.tar		#导出镜像
 docker load < alpine-latest_with_1.txt.tar					#导入镜像
 ```
 
-### 容器命令
+### 容器初级命令
+
+对于容器而言，其启动程序就是容器应用进程，容器就是为了主进程而存在的，主进程退出，容器就失去了存在的意义，从而退出，其它辅助进程不是它需要关心的东西。
+
+例如 `service nginx start` 命令，会被理解为 `CMD [ "sh", "-c", "service nginx start"]`，因此主进程实际上是 `sh`。那么当 `service nginx start` 命令结束后，`sh` 也就结束了，`sh` 作为主进程退出了，自然就会令容器退出。
+
+正确的做法是直接执行 `nginx` 可执行文件，并且要求以前台形式运行：``CMD ["nginx", "-g", "daemon off;"]``
 
 ```shell
 #查看本地容器进程
 docker ps -a
+docker container ls
 #启动交互式容器(-i 可交互;-t 关联输入输出;-d 后台方式运行;--rm 退出后即删除容器;--name="xx" 定义容器名称)
 docker run -it --name="centos1" docker.io/library/centos:latest /bin/bash
 #启动后台容器
@@ -103,15 +110,15 @@ docker start/stop/restart d7f1fab36c77
 docker rm busy_chaum
 #删除exit的容器
 for i in `docker ps -a|grep -i exit|awk '{print $1}'`;do docker rm $i;done
-#修改并提交容器
-docker run -it --name="alpine1" docker.io/library/alpine:latest /bin/sh
-echo hello > 1.txt
-docker commit -p alpine1 jihuayi/alpine:latest_with_1.txt
-docker run -it --rm --name="alpine2" docker.io/jihuayi/alpine:latest_with_1.txt /bin/sh
 #动态查看容器日志
 docker run hello-world
 docker ps -a|grep hello
 docker logs -f b1aba187e92c
+```
+
+### 容器高级命令
+
+```shell
 #容器端口映射(-p 本地端口:容器端口)
 docker pull nginx
 docker run --rm --name="nginx1" -d -p81:80 docker.io/library/nginx:latest
@@ -132,4 +139,90 @@ deb http:mirrors.163.com/debian/ jessie-updates main non-free contrib
 EOF
 apt-get update && apt-get install curl
 ```
+
+## Docker镜像制作
+
+### 容器提交
+
+```shell
+#修改并提交容器
+docker run -it --name="alpine1" docker.io/library/alpine:latest /bin/sh
+echo hello > 1.txt
+docker commit -p alpine1 jihuayi/alpine:latest_with_1.txt
+docker run -it --rm --name="alpine2" docker.io/jihuayi/alpine:latest_with_1.txt /bin/sh
+```
+
+### 利用Dockerfile
+
+```shell
+#Dockerfile预备工作
+mkdir /data/dockerfile
+cd /data/dockerfile
+cp /root/html/index.html .
+vi docker-entrypoint.sh													#entrypoint脚本编辑
+
+#!/bin/bash
+/sbin/nginx -g "daemon off;"
+
+chmod +x docker-entrypoint.sh
+vi /data/dockerfile/Dockerfile											#Dockerfile的编辑(指令大写，内容小写)
+
+#USER/WORKDIR
+FROM docker.io/library/nginx:latest
+USER nginx																#whoami
+WORKDIR /usr/share/nginx/html											#pwd
+#ADD/EXPOSE
+FROM docker.io/library/nginx:latest
+ADD index.html /usr/share/nginx/html/index.html							#把指定文件固定到镜像
+EXPOSE 80																#监听的端口，配合docker run -P使用
+#RUN/ENV
+FROM docker.io/library/centos:7
+ENV VER 9.11.4															#环境变量固定到镜像
+RUN yum install bind-$VER -y											#在镜像里执行命令
+#CMD(docker run时默认执行的命令，会被docker run镜像名后的command替换)
+FROM centos:7
+RUN yum install httpd -y
+CMD ["httpd","-D","FOREGROUND"]
+#ENTRYPOINT(docker run时默认执行的命令(脚本)，CMD内容会作为参数传给ENTRYPOINT)
+FROM centos:7
+ADD docker-entrypoint.sh /docker-entrypoint.sh
+RUN yum install epel-release -q -y && yum install nginx -y
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+#用Dockerfile创建镜像
+docker build -t jihuayi/xxx_with_xxx
+```
+
+小例子：
+
+```shell
+vi /data/dockerfile/demo.jhy.com.conf
+
+server{
+	listen 80;
+	server_name demo.jhy.com;
+	
+	root /usr/share/nginx/html;
+}
+
+vi /data/dockerfile/Dockerfile
+
+FROM nginx:latest
+USER root
+ENV WWW /usr/share/nginx/html
+ENV CONF /etc/nginx/conf.d
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &&\
+	echo 'Asia/Shanghai' >/etc/timezone
+WORKDIR $WWW
+ADD index.html $WWW/index.html
+ADD demo.jhy.com.conf $CONF/demo.jhy.com.conf
+EXPOSE 80
+CMD ["nginx","-g","daemon off;"]
+
+docker build . -t jihuayi/nginx:baidu
+docker run --rm -p80:80 jihuayi/nginx:baidu
+```
+
+## Docker的网络模型
+
 
