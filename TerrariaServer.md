@@ -1,4 +1,4 @@
-1. Xshell连接阿里云服务器
+1. Xshell连接阿里云服务器（记得给7777端口打通防火墙）
 
 2. 查看内存：
 
@@ -28,19 +28,7 @@
 
    `yum -y install "wget" "unzip" "screen" "vim"`
 
-6. 安装tshock服务器（可选）：
-
-   ```shell
-   #安装mono：https://www.mono-project.com/download/stable/#download-lin-centos
-   rpmkeys --import "http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef"
-   su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
-   yum install mono-devel
-   #安装tshock：https://github.com/Pryaxis/TShock/releases
-   unzip TShock4.4.0_Pre11_Terraria1.4.0.5.zip
-   screen mono Terrariaserver.exe
-   ```
-
-7. 安装官方服务器（可选）：
+6. 安装官方服务器（可选）：
 
    ```shell
    cd /opt
@@ -60,6 +48,20 @@
    screen -R terrariaServer
    ```
 
+7. 安装tshock服务器（可选）：
+
+   ```shell
+   #安装mono：https://www.mono-project.com/download/stable/#download-lin-centos
+   rpmkeys --import "http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef"
+   su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
+   su -c 'curl https://download.mono-project.com/repo/centos8-stable.repo | tee /etc/yum.repos.d/mono-centos8-stable.repo'
+   yum install mono-devel
+   #安装tshock：https://github.com/Pryaxis/TShock/releases
+   wget "https://github.com/Pryaxis/TShock/releases/download/v4.4.0-pre15/TShock4.4.0_Pre15_Terraria1.4.1.2.zip"
+   unzip TShock4.4.0_Pre15_Terraria1.4.1.2.zip
+   screen mono Terrariaserver.exe
+   ```
+   
 8. 服务器传递地图：
 
    `find / -name 2083Master.wld #查找地图存储位置`
