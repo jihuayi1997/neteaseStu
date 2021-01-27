@@ -1,4 +1,4 @@
-# Golang语法
+# Golang
 
 ## 基础语法
 
