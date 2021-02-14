@@ -4,57 +4,85 @@
 
 ### 入门
 
-go目录：bin，pkg，src
+准备工作
 
-0开头：八进制
+```cmd
+go version
+go env -w GOPROXY=https://goproxy.cn,direct
+```
 
-0x开头：十六进制
+创建hello项目
 
-若需编译linux可执行文件
+```cmd
+mkdir hello
+cd hello
+go mod init hello
+```
 
-```shell
+创建hello.go
+
+```go
+package main									//main包，表明当前是一个可执行程序
+
+import "fmt"									//导入内置fmt包
+
+func main() {									//main函数，是程序执行的入口
+    fmt.Println("Hello, World!")
+}
+```
+
+编译hello项目
+
+```cmd
+//1. win to win
+go build
+//2. win to Linux
 set GOOS=linux
 set GOARCH=amd64
 go build
-```
-
-```powershell
-$env:GOOS="linux"
-$env:GOARCH="amd64"
+//3. win to mac
+SET GOOS=darwin
+SET GOARCH=amd64
 go build
 ```
 
-### 格式控制符
+### 变量
 
-%s 字符串
+* 类型
+  * 带符号整型：int8  int16  int32  int64  int(32位系统为int32，64位系统为int64)
+  * 无符号整型：uint8  uint16  uint32  uint64  uint(32位系统为uint32，64位系统为uint64)
+  * 浮点型：float32  float64  complex64（实部和虚部为32位）  complex128（实部和虚部为64位）
+  * 布尔型：true  false（不能转为其他类型）
+  * 指针型：uintptr
+  * 字符串：string
+* 定义：`var name type`（可批量，默认值为空：0  false  ""）
+* 定义并初始化：
+  * `var name = value`
+  * `name := value`（仅函数体内可用）
+* 匿名变量：_，多用于占位，表示忽略值，不占用内存
+* 格式控制符：%s: 字符串  %d: 十进制  %b: 二进制  %o: 八进制  %x: 十六进制  %T: 变量类型  %v: 相应值默认格式
 
-%d 十进制
+### 常量
 
-%b 二进制
+* 定义并初始化：`const pi = 3.1415`（可批量，如果省略值表示和上一行相同）
+* 常量计数器：iota，遇const重置为0，const中每新增一行常量声明使iota计数一次
 
-%o 八进制
-
-%x 十六进制
-
-%T 变量类型
-
-%v 相应值默认格式
-
-### 基本数据类型
-
-带符号整型：int8、int16、int32、int64 
-
-无符号整型：uint8、uint16、uint32、uint64
-
-int和uint：32位系统为uint32，64位系统为uint64
-
-小数分为float64和float32，默认是float64，float32不能直接赋值给float64
-
-complex64实部虚部各32，complex128实部虚部各64
-
-uintptr：无符号整型，存放指针
-
-bool默认false，不能转换其他类型
+```go
+func main() {
+    const (
+            a = 1000   					//1000
+        	b          					//1000
+        	c = iota   					//2
+        	d = "ha"   					//"ha"
+        	e          					//"ha"
+        	f = 100    					//100
+        	g          					//100
+        	h = iota   					//7
+        	i          					//8
+    )
+    fmt.Println(a,b,c,d,e,f,g,h,i)		//1000 1000 2 ha ha 100 100 7 8
+}
+```
 
 ### 字符串
 
@@ -89,7 +117,7 @@ func main()  {
 
 字串最后一次出现的位置：`strings.LastIndex(s,”hello”)`
 
-字符串连接：`strings.Join(a[]string, sep string)`
+字符串切片拼接：`strings.Join(a[]string, sep string)`
 
 go不可以直接修改字符串内容，若需要修改先转成切片然后建立新字符串接收转换
 
@@ -101,13 +129,44 @@ go不可以直接修改字符串内容，若需要修改先转成切片然后建
 
 ### 数组
 
-初始化：`arr := [...][2]int{{1,2},{3,4},{5,6}}`
+* 定义：`var arr [3]int`（默认值为空：0  false  ""）
+* 定义并初始化：
+  * `var arr = [5]float32{1000.0, 2.0, 3.4, 7.0, 50.0}`
+  * `arr := [...][2]int{{1,2},{3,4},{5,6}}`
+* 数组长度必须是常量，长度是数组类型的一部分，大小不可修改
+* Go语言支持多维数组，但多维数组只有最外层可以使用`...`来让编译器推导长度
 
-数组长度必须是常量，长度是数组类型的一部分，大小不可修改
+```go
+func main() {
+	var a = [...]string{"北京", "上海", "深圳"}
+	// 方法1：for循环遍历
+	for i := 0; i < len(a); i++ {
+		fmt.Println(a[i])
+	}
 
-Go语言支持多维数组，但多维数组只有最外层可以使用`...`来让编译器推导长度
+	// 方法2：for range遍历
+	for i, v := range a {
+		fmt.Println(i, v)
+	}
+}
+```
 
-数组是值类型，赋值传参会复制整个数组，改变副本不影响本身
+* 数组是值类型，支持 "=="、"!=" 操作符，赋值传参会复制整个数组，改变副本不影响本身
+* 指针数组：[3]\*int，数组指针：\*[3]int
+
+```go
+func modifyArray(x [3][2]int) {
+	x[2][0] = 100
+}
+
+func main() {
+	a := [3][2]int{
+		{1, 1},{1, 1},{1, 1},
+	}
+	modifyArray(a) 					//在modify中修改的是a的副本x
+	fmt.Println(a)  				//[[1 1] [1 1] [1 1]]
+}
+```
 
 ### 切片
 
