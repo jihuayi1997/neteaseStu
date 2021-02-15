@@ -1,8 +1,6 @@
 # Golang
 
-## 基础语法
-
-### 入门
+## 引入
 
 准备工作
 
@@ -46,6 +44,8 @@ SET GOARCH=amd64
 go build
 ```
 
+## 基础语法
+
 ### 变量
 
 * 类型
@@ -55,7 +55,7 @@ go build
   * 布尔型：true  false（不能转为其他类型）
   * 指针型：uintptr
   * 字符串：string
-* 定义：`var name type`（可批量，默认值为空：0  false  ""）
+* 定义：`var name type`（可批量，自动初始化）
 * 定义并初始化：
   * `var name = value`
   * `name := value`（仅函数体内可用）
@@ -129,7 +129,7 @@ go不可以直接修改字符串内容，若需要修改先转成切片然后建
 
 ### 数组
 
-* 定义：`var arr [3]int`（默认值为空：0  false  ""）
+* 定义：`var arr [3]int`（自动初始化）
 * 定义并初始化：
   * `var arr = [5]float32{1000.0, 2.0, 3.4, 7.0, 50.0}`
   * `arr := [...][2]int{{1,2},{3,4},{5,6}}`
@@ -170,79 +170,96 @@ func main() {
 
 ### 切片
 
-切片可变长度，是引用类型，都指向底层数组，底层数组保存真正数据
+* 定义：
+  * `var name []type`（置为nil）
+  * `var name = make([]type, len, cap)`（自动初始化）
+  * `name := make([]type, len, cap)`（自动初始化）
+* 定义并初始化：
+  * `var name = []int{1，2，3，4}`
+  * `a := []int{1,2,3,4}`
+* 可以使用切片表达式：（左闭右开，low缺省为0，high缺省为len(s)，支持基于数组构造切片，切片再切片）
+  * `var a = s[low:high]`
+  * `a := s[low:high]`
+
+```go
+func main() {
+    //基于数组构造切片
+	a := [5]int{1, 2, 3, 4, 5}
+	s := a[1:3]															//high<=数组长度
+	fmt.Printf("s:%v len(s):%v cap(s):%v\n", s, len(s), cap(s))			//s:[2 3] len(s):2 cap(s):4
+    
+    //切片再切片
+    s1 := s[:]
+    s2 := s[0:4]														//high<=切片容量
+    fmt.Printf("s1:%v len(s1):%v cap(s1):%v\n", s1, len(s1), cap(s1))	//s1:[2 3] len(s1):2 cap(s1):4
+    fmt.Printf("s2:%v len(s2):%v cap(s2):%v\n", s2, len(s2), cap(s2))	//s2:[2 3 4 5] len(s2):4 cap(s2):4
+}
+```
+
+* 切片之间不能比较，只能和`nil`比较，`nil`值的切片无底层数组，长度容量都是0
+
+```go
+//切片长度：len(a)，元素个数
+//切片容量：cap(a)，底层数组从切片第一个元素到最后，用make缺省定义时数值同len
+//判断切片是否为空切片：len(a)==0
+var s1 []int         		//定义整型切片，置为nil，len(s1)=0;cap(s1)=0;s1==nil
+s2 := make([]int, 0)        //定义整形切片，自动初始化，len(s2)=0;cap(s2)=0;s2!=nil
+s3 := []int{} 				//定义并初始化整型空切片，len(s3)=0;cap(s3)=0;s3!=nil
+```
+
+* 切片可变长度，是引用类型，都指向底层数组，底层数组保存真正数据
 
 ```go
 func main() {
 	a := []int{1, 2, 3, 4, 5}
-	b := a		   //共享一个底层数组
-	fmt.Println(a) //[1 2 3 4 5]
-	fmt.Println(b) //[1 2 3 4 5]
+	b := a		   			//共享一个底层数组
+	fmt.Println(a) 			//[1 2 3 4 5]
+	fmt.Println(b) 			//[1 2 3 4 5]
 	b[0] = 1000
-	fmt.Println(a) //[1000 2 3 4 5]
-	fmt.Println(b) //[1000 2 3 4 5]
+	fmt.Println(a) 			//[1000 2 3 4 5]
+	fmt.Println(b) 			//[1000 2 3 4 5]
 }
 ```
 
-切片之间不能比较，只能和`nil`比较，`nil`值的切片无底层数组，长度容量都是0
+* 为切片追加元素：`a = append(a,ss...)`，支持追加到nil
 
-```go
-var s1 []int         //声明整型切片，len(s1)=0;cap(s1)=0;s1==nil
-s2 := []int{}        //构造整型切片，len(s2)=0;cap(s2)=0;s2!=nil
-s3 := make([]int, 0) //构造整型切片，len(s3)=0;cap(s3)=0;s3!=nil
-```
+* 扩容策略：
+  * 首先判断若申请容量>2倍旧容量，最终容量就是新申请的容量
+  * 否则判断旧切片长度小于1024，最终容量是旧容量2倍
+  * 否则最终容量从旧容量开始循环增加原来的1/4，直到最终容量大于申请容量
+  * 最终容量计算值溢出，则最终容量就是新申请容量
 
-构造切片：直接构造；基于数组构造切片；切片再切片；`make([]T,size,cap)`，其中`cap`默认`==len`
-
-切片长度：`len(a)`，元素个数
-
-切片容量：`cap(a)`，底层数组从切片第一个元素到最后
-
-判断切片是否空：`len(a)==0`而不是`a==nil`
-
-为切片追加元素：`a = append(a,ss...)`，支持追加到nil
-
-扩容策略：
-
-​	首先判断若申请容量>2倍旧容量，最终容量就是新申请的容量
-
-​	否则判断旧切片长度小于1024，最终容量是旧容量2倍
-
-​	否则最终容量从旧容量开始循环增加原来的1/4，直到最终容量大于申请容量
-
-​	最终容量计算值溢出，则最终容量就是新申请容量
-
-切片的复制：`copy(dest,src)`，可以将一个切片的数据复制到另一个切片空间中
+* 切片的复制：`copy(dest,src)`，可以将一个切片的数据复制到另一个切片空间中
 
 ```go
 func main() {
 	a := []int{1, 2, 3, 4, 5}
 	c := make([]int, 5, 5)
-	copy(c, a)     //使用copy()函数将切片a中的元素复制到切片c
-	fmt.Println(a) //[1 2 3 4 5]
-	fmt.Println(c) //[1 2 3 4 5]
+	copy(c, a)     			//使用copy()函数将切片a中的元素复制到切片c
+	fmt.Println(a) 			//[1 2 3 4 5]
+	fmt.Println(c) 			//[1 2 3 4 5]
 	c[0] = 1000
-	fmt.Println(a) //[1 2 3 4 5]
-	fmt.Println(c) //[1000 2 3 4 5]
+	fmt.Println(a) 			//[1 2 3 4 5]
+	fmt.Println(c) 			//[1000 2 3 4 5]
 }
 ```
 
-从切片中删除元素：Go没有专用方法，可以用`a=append(a[:index],a[index+1:]...)`
+* 从切片中删除元素：Go没有专用方法，可以用`a=append(a[:index],a[index+1:]...)`
 
 ```go
 func main() {
-    x := [...]int{1,3,5} 		//数组
-    a := x[:]			 		//切片
-								//要删除索引为1的元素
-    a = append(a[:1], a[2:]...) //此时修改了底层数组(向前覆盖)
-	fmt.Println(a)		 		//[1,5]
-    fmt.Println(x)		 		//[1,5,5]
+    x := [...]int{1,3,5,7,9} 		//数组
+    a := x[1:5]			 			//切片[3,5,7,9]
+									//要删除切片中索引为1的元素
+    a = append(a[:1], a[2:]...) 	//此时修改了切片也即修改了底层数组
+	fmt.Println(a)		 			//[3,7,9]
+    fmt.Println(x)		 			//[1,3,7,9,9]
 }
 ```
 
-对切片排序：`sort.Ints(a)`
+* 对切片排序：`sort.Ints(a)`
 
-元素可以为map类型：
+* 元素可以为map类型：
 
 ```go
 func main() {
@@ -288,13 +305,13 @@ map是无序的基于key-value的数据结构，Go语言map是引用类型，初
 
 ```go
 func main() {
-	rand.Seed(time.Now().UnixNano()) //初始化随机数种子
+	rand.Seed(time.Now().UnixNano()) 		//初始化随机数种子
 
 	var scoreMap = make(map[string]int, 200)
 
 	for i := 0; i < 100; i++ {
-		key := fmt.Sprintf("stu%02d", i) //生成stu开头的字符串
-		value := rand.Intn(100)          //生成0~99的随机整数
+		key := fmt.Sprintf("stu%02d", i) 	//生成stu开头的字符串
+		value := rand.Intn(100)          	//生成0~99的随机整数
 		scoreMap[key] = value
 	}
 	//取出map中的所有key存入切片keys
