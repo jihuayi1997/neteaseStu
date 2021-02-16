@@ -46,6 +46,13 @@ go build
 
 ## 基础语法
 
+```go
+// "var name =" 在函数体内可与 "name :=" 等价替换
+// 定义值类型（自动初始化）：int:0,  bool:false,  string:"",  数组按长度自动填充
+// 定义指针类型（自动置为nil），用new定义（自动初始化）：即指向的内存自动填充
+// 定义引用类型（自动置为nil），用make定义（自动初始化）：slice:按长度自动填充,  map:[]
+```
+
 ### 变量
 
 * 类型
@@ -58,7 +65,6 @@ go build
 * 定义：`var name type`（可批量，自动初始化）
 * 定义并初始化：
   * `var name = value`
-  * `name := value`（仅函数体内可用）
 * 匿名变量：_，多用于占位，表示忽略值，不占用内存
 * 格式控制符：%s: 字符串  %d: 十进制  %b: 二进制  %o: 八进制  %x: 十六进制  %T: 变量类型  %v: 相应值默认格式
 
@@ -86,11 +92,12 @@ func main() {
 
 ### 字符串
 
-多行字符串必须用反引号，反引号内转义字符无效，原样输出
-
-字符串拼接：`s:=fmt.Sprintf(“%s%s”,name,word)`或`s:=name+word`
-
-字符串分割：`s:=strings.Split(s1,” ”)`，返回字符串切片
+* 多行字符串必须用反引号，反引号内转义字符无效，原样输出
+* 不可以直接修改字符串内容，若需要修改先转成切片然后建立新字符串接收转换
+* 字符：uint8--byte(ASCII)，int32--rune(UTF-8)
+* 字符串：string（UTF-8。字符为ASCII上字符占1字节，其他字符2-4个字节）
+* 字符串拼接：`s:=fmt.Sprintf(“%s%s”,name,word)`或`s:=name+word`
+* 字符串分割：`s:=strings.Split(s1,” ”)`，返回字符串切片
 
 ```go
 func main()  {
@@ -107,32 +114,20 @@ func main()  {
 }
 ```
 
-判断字符串包含：`flag:=strings.Contains(s,”hello”)`
+* 判断字符串包含：`flag:=strings.Contains(s,”hello”)`
+* 判断字符串前缀 ：`flag:=strings.HasPrefix(s,”hello”)`
+* 判断字符串后缀：`flag:=strings.HasSuffix(s,”hello”)`
+* 子串第一次出现的位置：`strings.Index(s,”hello”)`
+* 字串最后一次出现的位置：`strings.LastIndex(s,”hello”)`
+* 字符串切片拼接：`strings.Join(a[]string, sep string)`
 
-判断字符串前缀 ：`flag:=strings.HasPrefix(s,”hello”)`
-
-判断字符串后缀：`flag:=strings.HasSuffix(s,”hello”)`
-
-子串第一次出现的位置：`strings.Index(s,”hello”)`
-
-字串最后一次出现的位置：`strings.LastIndex(s,”hello”)`
-
-字符串切片拼接：`strings.Join(a[]string, sep string)`
-
-go不可以直接修改字符串内容，若需要修改先转成切片然后建立新字符串接收转换
-
-字符串：string（UTF-8。字符为ASCII上字符占1字节，其他字符2-4个字节）
-
-字符：uint8--byte(ASCII)，int32--rune(UTF-8)
-
-判断字符是否为中文：`flag:=unicode.Is(unicode.Han)`
+* 判断字符是否为中文：`flag:=unicode.Is(unicode.Han)`
 
 ### 数组
 
 * 定义：`var arr [3]int`（自动初始化）
 * 定义并初始化：
-  * `var arr = [5]float32{1000.0, 2.0, 3.4, 7.0, 50.0}`
-  * `arr := [...][2]int{{1,2},{3,4},{5,6}}`
+  * `var arr = [...][2]int{{1,2},{3,4},{5,6}}`
 * 数组长度必须是常量，长度是数组类型的一部分，大小不可修改
 * Go语言支持多维数组，但多维数组只有最外层可以使用`...`来让编译器推导长度
 
@@ -167,19 +162,27 @@ func main() {
 	fmt.Println(a)  				//[[1 1] [1 1] [1 1]]
 }
 ```
-
-### 切片
+### 指针（指针类型）
 
 * 定义：
-  * `var name []type`（置为nil）
-  * `var name = make([]type, len, cap)`（自动初始化）
-  * `name := make([]type, len, cap)`（自动初始化）
+  * `var name *type`（自动置为nil）
+  * `var name = new(type)`（自动初始化）
 * 定义并初始化：
-  * `var name = []int{1，2，3，4}`
-  * `a := []int{1,2,3,4}`
-* 可以使用切片表达式：（左闭右开，low缺省为0，high缺省为len(s)，支持基于数组构造切片，切片再切片）
-  * `var a = s[low:high]`
-  * `a := s[low:high]`
+  * `var name = &a`
+
+* 不支持指针运算，取地址：'&'，指针取值：'*'
+
+* new：一般用来给基本数据类型申请内存，返回对应类型指针
+
+* make：只用于slice, map, chan的内存创建，返回这三个类型本身
+### 切片 - 动态数组（引用类型）
+
+* 定义：
+  * `var name []type`（自动置为nil）
+  * `var name = make([]type, len, cap)`（自动初始化）
+* 定义并初始化：
+  * `var name = []int{1,2,3,4}`
+  * `var a = s[low:high]`（切片表达式，左闭右开，low缺省为0，high缺省为len(s)，支持基于数组构造切片，切片再切片）
 
 ```go
 func main() {
@@ -207,7 +210,7 @@ s2 := make([]int, 0)        //定义整形切片，自动初始化，len(s2)=0;c
 s3 := []int{} 				//定义并初始化整型空切片，len(s3)=0;cap(s3)=0;s3!=nil
 ```
 
-* 切片可变长度，是引用类型，都指向底层数组，底层数组保存真正数据
+* 指向底层数组，底层数组保存真正数据
 
 ```go
 func main() {
@@ -279,32 +282,21 @@ func main() {
 }
 ```
 
-### 内存申请
+### map（引用类型）
 
-&...*
+* 提供映射关系容器为map，内部使用散列表(hash)实现，无序的基于key-value的数据结构
 
-new：一般用来给基本数据类型申请内存，返回对应类型指针
+* 定义：
+  * `var name map[key_type]value_type`（自动置为nil）
+  * `var name = make(map[key_type]value_type,cap)`（自动初始化）
 
-make：只用于slice, map, chan的内存创建，返回这三个类型本身
+* 判断某个键是否存在：`value, ok := map[key]`
 
-不支持指针运算
-
-### map
-
-Go提供映射关系容器为map，内部使用散列表(hash)实现
-
-map是无序的基于key-value的数据结构，Go语言map是引用类型，初始化才能使用
-
-构造map：`make(map[KetType]ValueType,[cap])`
-
-判断某个键是否存在：`value, ok := map[key]`
-
-删除某组键值对：`delete(map,key)`，删除不存在的也无所谓
-
-按照指定顺序遍历map：
+* 删除某组键值对：`delete(map,key)`，删除不存在的也无所谓
 
 ```go
 func main() {
+    //按照指定顺序遍历map
 	rand.Seed(time.Now().UnixNano()) 		//初始化随机数种子
 
 	var scoreMap = make(map[string]int, 200)
@@ -328,7 +320,7 @@ func main() {
 }
 ```
 
-值可以为切片类型：
+* 值可以为slice类型：
 
 ```go
 func main() {
@@ -356,15 +348,9 @@ func calculate(x,y int, m string) (ret1 int, ret2 string){
 }
 ```
 
-支持类型简写
+* 支持类型简写，支持可变长参数：参数名后加`...`，实际类型为切片，放在函数参数的最后，支持多返回值，不支持默认参数
 
-支持可变长参数：参数名后加`...`，实际类型为切片，放在函数参数的最后
-
-支持多返回值
-
-不支持默认参数
-
-在一个命名函数中不能再声明命名函数
+* 在一个命名函数中不能再声明命名函数
 
 ```go
 func main(){
@@ -379,9 +365,9 @@ func main(){
 }
 ```
 
-作用域：全局作用域，函数作用域，语句块作用域
+* 作用域：全局作用域，函数作用域，语句块作用域
 
-defer语句：把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
+* defer语句：把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
 
 ```go
 func f1() int {
@@ -418,7 +404,7 @@ func main() {
 }
 ```
 
-函数类型：可以作为参数和返回值
+* 函数类型：可以作为参数和返回值
 
 ```go
 func f1(x func() int) func(int, int) int {	//参数类型func()int，返回值类型func(int,int)int
@@ -429,4 +415,4 @@ func f1(x func() int) func(int, int) int {	//参数类型func()int，返回值�
 }
 ```
 
-闭包：
+* 闭包：
