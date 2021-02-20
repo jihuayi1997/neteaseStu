@@ -146,8 +146,8 @@ func main() {
 }
 ```
 
-* 数组是值类型，支持 "=="、"!=" 操作符，赋值传参会复制整个数组，改变副本不影响本身
 * 指针数组：[3]\*int，数组指针：\*[3]int
+* 数组是值类型，支持 "=="、"!=" 操作符，赋值传参会复制整个数组，改变副本不影响本身
 
 ```go
 func modifyArray(x [3][2]int) {
@@ -224,13 +224,23 @@ func main() {
 }
 ```
 
-* 为切片追加元素：`a = append(a,ss...)`，支持追加到nil
+* 为切片追加元素：`a = append(a,1)`，支持追加到nil
 
 * 扩容策略：
   * 首先判断若申请容量>2倍旧容量，最终容量就是新申请的容量
   * 否则判断旧切片长度小于1024，最终容量是旧容量2倍
   * 否则最终容量从旧容量开始循环增加原来的1/4，直到最终容量大于申请容量
   * 最终容量计算值溢出，则最终容量就是新申请容量
+
+```go
+func main(){
+	var s []int
+	s1 = append(s1, 1)        // [1]，可以添加一个元素
+	s1 = append(s1, 2, 3, 4)  // [1 2 3 4]，可以添加多个元素
+	s2 := []int{5, 6, 7}  
+	s1 = append(s1, s2...)    // [1 2 3 4 5 6 7]，可以添加另一个切片中的元素（后面加…）
+}
+```
 
 * 切片的复制：`copy(dest,src)`，可以将一个切片的数据复制到另一个切片空间中
 
@@ -266,37 +276,52 @@ func main() {
 
 ```go
 func main() {
-	var mapSlice = make([]map[string]string, 3)
-	for index, value := range mapSlice {
-		fmt.Printf("index:%d value:%v\n", index, value)
-	}
-	fmt.Println("after init")
-	// 对切片中的map元素进行初始化
+	var mapSlice = make([]map[string]string, 3)						//make了len为3的切片，自动填充3个map
+	for i, v := range mapSlice {
+		fmt.Printf("index:%d value:%v nil:%v\n", i, v, v == nil)	//index:0 value:map[] nil:true
+	}																//index:1 value:map[] nil:true
+	fmt.Println("after init")										//index:2 value:map[] nil:true
+    
+	// 对切片中的前两个map进行初始化
 	mapSlice[0] = make(map[string]string, 10)
-	mapSlice[0]["name"] = "小王子"
-	mapSlice[0]["password"] = "123456"
-	mapSlice[0]["address"] = "沙河"
-	for index, value := range mapSlice {
-		fmt.Printf("index:%d value:%v\n", index, value)
-	}
-}
+    mapSlice[1] = make(map[string]string, 10)
+	mapSlice[0]["name"] = "王"
+	mapSlice[0]["password"] = "1"
+	mapSlice[0]["address"] = "北"
+	for i, v := range mapSlice {
+		fmt.Printf("index:%d value:%v nil:%v\n", i, v, v == nil)	//index:0 value:map[address:北 name:王 password:1] nil:false
+	}																//index:1 value:map[] nil:false
+}																	//index:2 value:map[] nil:true
 ```
 
 ### map（引用类型）
 
 * 提供映射关系容器为map，内部使用散列表(hash)实现，无序的基于key-value的数据结构
-
 * 定义：
   * `var name map[key_type]value_type`（自动置为nil）
   * `var name = make(map[key_type]value_type,cap)`（自动初始化）
-
 * 判断某个键是否存在：`value, ok := map[key]`
-
-* 删除某组键值对：`delete(map,key)`，删除不存在的也无所谓
 
 ```go
 func main() {
-    //按照指定顺序遍历map
+	scoreMap := make(map[string]int)
+	scoreMap["张三"] = 90
+	scoreMap["小明"] = 100
+	// 如果key存在ok为true,v为对应的值；不存在ok为false,v为值类型的零值
+	v, ok := scoreMap["张三"]
+	if ok {
+		fmt.Println(v)
+	} else {
+		fmt.Println("查无此人")
+	}
+}
+```
+
+* 删除某组键值对：`delete(map,key)`，删除不存在的也无所谓
+* 按照指定顺序遍历map：把key移至slice，对slice排序
+
+```go
+func main() {
 	rand.Seed(time.Now().UnixNano()) 		//初始化随机数种子
 
 	var scoreMap = make(map[string]int, 200)
@@ -324,90 +349,98 @@ func main() {
 
 ```go
 func main() {
-	var sliceMap = make(map[string][]string, 3)
-	fmt.Println(sliceMap)
+	var sliceMap = make(map[string][]string, 3)			//make了cap为3的空map[]
+	fmt.Println(sliceMap, sliceMap == nil)				//map[] false
 	fmt.Println("after init")
 	key := "中国"
 	value, ok := sliceMap[key]
 	if !ok {
-		value = make([]string, 0, 2)
+		value = make([]string, 0, 2)					//make了len为0的切片
+		value = append(value, "北京", "上海")
+		sliceMap[key] = value
 	}
-	value = append(value, "北京", "上海")
-	sliceMap[key] = value
-	fmt.Println(sliceMap)
+	fmt.Println(sliceMap)								//map[中国:[北京 上海]]
 }
 ```
 
 ### 函数
 
 ```go
-func calculate(x,y int, m string) (ret1 int, ret2 string){
-    ret1 = x+y
-    ret2 = m
-    return			//使用命名的返回值，return后面可以省略返回值变量
+func calculate(x, y int, m string, z ...int) (ret1 int, ret2 string) { 		//支持参数类型简写
+	sum := 0																//支持可变长参数：...type，放在参数列表最后，传进去被存为切片
+	for _, v := range z {													//支持多返回值
+		sum = sum + v
+	}
+	ret1 = x + y + sum
+	ret2 = m
+	return 																	//使用命名的返回值，return后面可以省略返回值变量
+}
+
+func main() {
+	fmt.Println(calculate(1, 2, "nihao", 3, 4, 5))							//15 nihao
 }
 ```
 
-* 支持类型简写，支持可变长参数：参数名后加`...`，实际类型为切片，放在函数参数的最后，支持多返回值，不支持默认参数
+* 不支持默认参数，在一个命名函数中不能再声明命名函数，只可以匿名
 
-* 在一个命名函数中不能再声明命名函数
 
 ```go
 func main(){
-    //正常匿名函数
-    f1:=func(x,y int){
+    //正常匿名函数并调用
+    var f1 = func(x,y int){
         fmt.Println(x+y)
     }
+    f1(100, 200)
     //只调用一次也可以简写成立即执行函数
     func(x,y int){
         fmt.Println(x+y)
-    }(100,200)
+    }(100, 200)
 }
 ```
 
 * 作用域：全局作用域，函数作用域，语句块作用域
-
 * defer语句：把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
+* `return`在底层并不是原子操作，它分为给返回值赋值和RET指令两步。而`defer`语句执行的时机就在返回值赋值操作后，RET指令执行前。
 
 ```go
-func f1() int {
+func f1() int {						//返回值 = x, x++, RET返回值
 	x := 5
 	defer func() {
 		x++
 	}()
 	return x
 }
-func f2() (x int) {
+func f2() (x int) {					//返回值x = 5, x++, RET返回值x
 	defer func() {
 		x++
 	}()
 	return 5
 }
-func f3() (y int) {
+func f3() (y int) {					//返回值y = x, x++, RET返回值y
 	x := 5
 	defer func() {
 		x++
 	}()
 	return x
 }
-func f4() (x int) {
+func f4() (x int) {					//返回值x = 5, x的副本++, RET返回值x
 	defer func(x int) {
 		x++
 	}(x)
 	return 5
 }
 func main() {
-	fmt.Println(f1())						//5
-	fmt.Println(f2())						//6
-	fmt.Println(f3())						//5
-    fmt.Println(f4())						//5
+	fmt.Println(f1())				//5
+	fmt.Println(f2())				//6
+	fmt.Println(f3())				//5
+    fmt.Println(f4())				//5
 }
 ```
 
 * 函数类型：可以作为参数和返回值
 
 ```go
-func f1(x func() int) func(int, int) int {	//参数类型func()int，返回值类型func(int,int)int
+func f1(x func() int) func(int, int) int {	//参数类型func() int，返回值类型func(int,int) int
     ret := func(a,b int)int{
         return a + b
     }
