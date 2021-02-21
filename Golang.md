@@ -20,11 +20,11 @@ go mod init hello
 创建hello.go
 
 ```go
-package main									//main包，表明当前是一个可执行程序
+package main									// main包，表明当前是一个可执行程序
 
-import "fmt"									//导入内置fmt包
+import "fmt"									// 导入内置fmt包
 
-func main() {									//main函数，是程序执行的入口
+func main() {									// main函数，是程序执行的入口
     fmt.Println("Hello, World!")
 }
 ```
@@ -32,13 +32,13 @@ func main() {									//main函数，是程序执行的入口
 编译hello项目
 
 ```cmd
-//1. win to win
+// 1. win to win
 go build
-//2. win to Linux
+// 2. win to Linux
 set GOOS=linux
 set GOARCH=amd64
 go build
-//3. win to mac
+// 3. win to mac
 SET GOOS=darwin
 SET GOARCH=amd64
 go build
@@ -62,6 +62,7 @@ go build
   * 布尔型：true  false（不能转为其他类型）
   * 指针型：uintptr
   * 字符串：string
+* 类型别名：`rune`和`byte`就是类型别名，他们的定义如下：`type byte = uint8`  `type rune = int32`
 * 定义：`var name type`（可批量，自动初始化）
 * 定义并初始化：
   * `var name = value`
@@ -76,17 +77,17 @@ go build
 ```go
 func main() {
     const (
-            a = 1000   					//1000
-        	b          					//1000
-        	c = iota   					//2
-        	d = "ha"   					//"ha"
-        	e          					//"ha"
-        	f = 100    					//100
-        	g          					//100
-        	h = iota   					//7
-        	i          					//8
+            a = 1000   					// 1000
+        	b          					// 1000
+        	c = iota   					// 2
+        	d = "ha"   					// "ha"
+        	e          					// "ha"
+        	f = 100    					// 100
+        	g          					// 100
+        	h = iota   					// 7
+        	i          					// 8
     )
-    fmt.Println(a,b,c,d,e,f,g,h,i)		//1000 1000 2 ha ha 100 100 7 8
+    fmt.Println(a,b,c,d,e,f,g,h,i)		// 1000 1000 2 ha ha 100 100 7 8
 }
 ```
 
@@ -101,16 +102,16 @@ func main() {
 
 ```go
 func main()  {
-    //统计字符串中单词出现次数
+    // 统计字符串中单词出现次数
 	ss:="how do you do"
 	m:=make(map[string]int,10)
 	s:=strings.Split(ss," ")
 	s=append(s,"do")
-    fmt.Println(s)					//[how do you do do]
+    fmt.Println(s)					// [how do you do do]
 	for _,v:=range s{
 		m[v]++
 	}
-	fmt.Println(m)					//map[do:3 how:1 you:1]
+	fmt.Println(m)					// map[do:3 how:1 you:1]
 }
 ```
 
@@ -158,8 +159,8 @@ func main() {
 	a := [3][2]int{
 		{1, 1},{1, 1},{1, 1},
 	}
-	modifyArray(a) 					//在modify中修改的是a的副本x
-	fmt.Println(a)  				//[[1 1] [1 1] [1 1]]
+	modifyArray(a) 					// 在modify中修改的是a的副本x
+	fmt.Println(a)  				// [[1 1] [1 1] [1 1]]
 }
 ```
 ### 指针（指针类型）
@@ -186,28 +187,28 @@ func main() {
 
 ```go
 func main() {
-    //基于数组构造切片
+    // 基于数组构造切片
 	a := [5]int{1, 2, 3, 4, 5}
-	s := a[1:3]															//high<=数组长度
-	fmt.Printf("s:%v len(s):%v cap(s):%v\n", s, len(s), cap(s))			//s:[2 3] len(s):2 cap(s):4
+	s := a[1:3]															// high<=数组长度
+	fmt.Printf("s:%v len(s):%v cap(s):%v\n", s, len(s), cap(s))			// s:[2 3] len(s):2 cap(s):4
     
-    //切片再切片
+    // 切片再切片
     s1 := s[:]
-    s2 := s[0:4]														//high<=切片容量
-    fmt.Printf("s1:%v len(s1):%v cap(s1):%v\n", s1, len(s1), cap(s1))	//s1:[2 3] len(s1):2 cap(s1):4
-    fmt.Printf("s2:%v len(s2):%v cap(s2):%v\n", s2, len(s2), cap(s2))	//s2:[2 3 4 5] len(s2):4 cap(s2):4
+    s2 := s[0:4]														// high<=切片容量
+    fmt.Printf("s1:%v len(s1):%v cap(s1):%v\n", s1, len(s1), cap(s1))	// s1:[2 3] len(s1):2 cap(s1):4
+    fmt.Printf("s2:%v len(s2):%v cap(s2):%v\n", s2, len(s2), cap(s2))	// s2:[2 3 4 5] len(s2):4 cap(s2):4
 }
 ```
 
 * 切片之间不能比较，只能和`nil`比较，`nil`值的切片无底层数组，长度容量都是0
 
 ```go
-//切片长度：len(a)，元素个数
-//切片容量：cap(a)，底层数组从切片第一个元素到最后，用make缺省定义时数值同len
-//判断切片是否为空切片：len(a)==0
-var s1 []int         		//定义整型切片，置为nil，len(s1)=0;cap(s1)=0;s1==nil
-s2 := make([]int, 0)        //定义整形切片，自动初始化，len(s2)=0;cap(s2)=0;s2!=nil
-s3 := []int{} 				//定义并初始化整型空切片，len(s3)=0;cap(s3)=0;s3!=nil
+// 切片长度：len(a)，元素个数
+// 切片容量：cap(a)，底层数组从切片第一个元素到最后，用make缺省定义时数值同len
+// 判断切片是否为空切片：len(a)==0
+var s1 []int         		// 定义整型切片，置为nil，len(s1)=0;cap(s1)=0;s1==nil
+s2 := make([]int, 0)        // 定义整形切片，自动初始化，len(s2)=0;cap(s2)=0;s2!=nil
+s3 := []int{} 				// 定义并初始化整型空切片，len(s3)=0;cap(s3)=0;s3!=nil
 ```
 
 * 指向底层数组，底层数组保存真正数据
@@ -215,12 +216,12 @@ s3 := []int{} 				//定义并初始化整型空切片，len(s3)=0;cap(s3)=0;s3!=
 ```go
 func main() {
 	a := []int{1, 2, 3, 4, 5}
-	b := a		   			//共享一个底层数组
-	fmt.Println(a) 			//[1 2 3 4 5]
-	fmt.Println(b) 			//[1 2 3 4 5]
+	b := a		   			// 共享一个底层数组
+	fmt.Println(a) 			// [1 2 3 4 5]
+	fmt.Println(b) 			// [1 2 3 4 5]
 	b[0] = 1000
-	fmt.Println(a) 			//[1000 2 3 4 5]
-	fmt.Println(b) 			//[1000 2 3 4 5]
+	fmt.Println(a) 			// [1000 2 3 4 5]
+	fmt.Println(b) 			// [1000 2 3 4 5]
 }
 ```
 
@@ -248,12 +249,12 @@ func main(){
 func main() {
 	a := []int{1, 2, 3, 4, 5}
 	c := make([]int, 5, 5)
-	copy(c, a)     			//使用copy()函数将切片a中的元素复制到切片c
-	fmt.Println(a) 			//[1 2 3 4 5]
-	fmt.Println(c) 			//[1 2 3 4 5]
+	copy(c, a)     			// 使用copy()函数将切片a中的元素复制到切片c
+	fmt.Println(a) 			// [1 2 3 4 5]
+	fmt.Println(c) 			// [1 2 3 4 5]
 	c[0] = 1000
-	fmt.Println(a) 			//[1 2 3 4 5]
-	fmt.Println(c) 			//[1000 2 3 4 5]
+	fmt.Println(a) 			// [1 2 3 4 5]
+	fmt.Println(c) 			// [1000 2 3 4 5]
 }
 ```
 
@@ -261,12 +262,12 @@ func main() {
 
 ```go
 func main() {
-    x := [...]int{1,3,5,7,9} 		//数组
-    a := x[1:5]			 			//切片[3,5,7,9]
-									//要删除切片中索引为1的元素
-    a = append(a[:1], a[2:]...) 	//此时修改了切片也即修改了底层数组
-	fmt.Println(a)		 			//[3,7,9]
-    fmt.Println(x)		 			//[1,3,7,9,9]
+    x := [...]int{1,3,5,7,9} 		// 数组
+    a := x[1:5]			 			// 切片[3,5,7,9]
+									// 要删除切片中索引为1的元素
+    a = append(a[:1], a[2:]...) 	// 此时修改了切片也即修改了底层数组
+	fmt.Println(a)		 			// [3,7,9]
+    fmt.Println(x)		 			// [1,3,7,9,9]
 }
 ```
 
@@ -276,11 +277,11 @@ func main() {
 
 ```go
 func main() {
-	var mapSlice = make([]map[string]string, 3)						//make了len为3的切片，自动填充3个map
+	var mapSlice = make([]map[string]string, 3)						// make了len为3的切片，自动填充3个map
 	for i, v := range mapSlice {
-		fmt.Printf("index:%d value:%v nil:%v\n", i, v, v == nil)	//index:0 value:map[] nil:true
-	}																//index:1 value:map[] nil:true
-	fmt.Println("after init")										//index:2 value:map[] nil:true
+		fmt.Printf("index:%d value:%v nil:%v\n", i, v, v == nil)	// index:0 value:map[] nil:true
+	}																// index:1 value:map[] nil:true
+	fmt.Println("after init")										// index:2 value:map[] nil:true
     
 	// 对切片中的前两个map进行初始化
 	mapSlice[0] = make(map[string]string, 10)
@@ -289,9 +290,9 @@ func main() {
 	mapSlice[0]["password"] = "1"
 	mapSlice[0]["address"] = "北"
 	for i, v := range mapSlice {
-		fmt.Printf("index:%d value:%v nil:%v\n", i, v, v == nil)	//index:0 value:map[address:北 name:王 password:1] nil:false
-	}																//index:1 value:map[] nil:false
-}																	//index:2 value:map[] nil:true
+		fmt.Printf("index:%d value:%v nil:%v\n", i, v, v == nil)	// index:0 value:map[address:北 name:王 password:1] nil:false
+	}																// index:1 value:map[] nil:false
+}																	// index:2 value:map[] nil:true
 ```
 
 ### map（引用类型）
@@ -322,23 +323,23 @@ func main() {
 
 ```go
 func main() {
-	rand.Seed(time.Now().UnixNano()) 		//初始化随机数种子
+	rand.Seed(time.Now().UnixNano()) 		// 初始化随机数种子
 
 	var scoreMap = make(map[string]int, 200)
 
 	for i := 0; i < 100; i++ {
-		key := fmt.Sprintf("stu%02d", i) 	//生成stu开头的字符串
-		value := rand.Intn(100)          	//生成0~99的随机整数
+		key := fmt.Sprintf("stu%02d", i) 	// 生成stu开头的字符串
+		value := rand.Intn(100)          	// 生成0~99的随机整数
 		scoreMap[key] = value
 	}
-	//取出map中的所有key存入切片keys
+	// 取出map中的所有key存入切片keys
 	var keys = make([]string, 0, 200)
 	for key := range scoreMap {
 		keys = append(keys, key)
 	}
-	//对切片进行排序
+	// 对切片进行排序
 	sort.Strings(keys)
-	//按照排序后的key遍历map
+	// 按照排序后的key遍历map
 	for _, key := range keys {
 		fmt.Println(key, scoreMap[key])
 	}
@@ -349,35 +350,55 @@ func main() {
 
 ```go
 func main() {
-	var sliceMap = make(map[string][]string, 3)			//make了cap为3的空map[]
-	fmt.Println(sliceMap, sliceMap == nil)				//map[] false
+	var sliceMap = make(map[string][]string, 3)			// make了cap为3的空map[]
+	fmt.Println(sliceMap, sliceMap == nil)				// map[] false
 	fmt.Println("after init")
 	key := "中国"
 	value, ok := sliceMap[key]
 	if !ok {
-		value = make([]string, 0, 2)					//make了len为0的切片
+		value = make([]string, 0, 2)					// make了len为0的切片
 		value = append(value, "北京", "上海")
 		sliceMap[key] = value
 	}
-	fmt.Println(sliceMap)								//map[中国:[北京 上海]]
+	fmt.Println(sliceMap)								// map[中国:[北京 上海]]
 }
 ```
 
-### 函数
+### 结构体
+
+* 结构体占用一块连续的内存，空结构体不占用空间
+
+* 声明
 
 ```go
-func calculate(x, y int, m string, z ...int) (ret1 int, ret2 string) { 		//支持参数类型简写
-	sum := 0																//支持可变长参数：...type，放在参数列表最后，传进去被存为切片
-	for _, v := range z {													//支持多返回值
+type person struct {
+	name, city string
+	age        int8
+}
+```
+
+* 定义：
+  * `var p1 person`（自动初始化）
+  * `var p1 = new(person)`（自动初始化）（虽然返回结构体指针，但支持`p1.name="wang"`的方式赋值）
+* 定义并初始化：`P := person{age:24, name:"Tom"}`（若按顺序初始化所有字段时，则key可省略）
+
+## 函数
+
+### 基础
+
+```go
+func calculate(x, y int, m string, z ...int) (ret1 int, ret2 string) { 		// 支持参数类型简写
+	sum := 0																// 支持可变长参数：...type，放在参数列表最后，传进去被存为切片
+	for _, v := range z {													// 支持多返回值
 		sum = sum + v
 	}
 	ret1 = x + y + sum
 	ret2 = m
-	return 																	//使用命名的返回值，return后面可以省略返回值变量
+	return 																	// 使用命名的返回值，return后面可以省略返回值变量
 }
 
 func main() {
-	fmt.Println(calculate(1, 2, "nihao", 3, 4, 5))							//15 nihao
+	fmt.Println(calculate(1, 2, "nihao", 3, 4, 5))							// 15 nihao
 }
 ```
 
@@ -386,12 +407,12 @@ func main() {
 
 ```go
 func main(){
-    //正常匿名函数并调用
+    // 正常匿名函数并调用
     var f1 = func(x,y int){
         fmt.Println(x+y)
     }
     f1(100, 200)
-    //只调用一次也可以简写成立即执行函数
+    // 只调用一次也可以简写成立即执行函数
     func(x,y int){
         fmt.Println(x+y)
     }(100, 200)
@@ -399,48 +420,10 @@ func main(){
 ```
 
 * 作用域：全局作用域，函数作用域，语句块作用域
-* defer语句：把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
-* `return`在底层并不是原子操作，它分为给返回值赋值和RET指令两步。而`defer`语句执行的时机就在返回值赋值操作后，RET指令执行前。
-
-```go
-func f1() int {						//返回值 = x, x++, RET返回值
-	x := 5
-	defer func() {
-		x++
-	}()
-	return x
-}
-func f2() (x int) {					//返回值x = 5, x++, RET返回值x
-	defer func() {
-		x++
-	}()
-	return 5
-}
-func f3() (y int) {					//返回值y = x, x++, RET返回值y
-	x := 5
-	defer func() {
-		x++
-	}()
-	return x
-}
-func f4() (x int) {					//返回值x = 5, x的副本++, RET返回值x
-	defer func(x int) {
-		x++
-	}(x)
-	return 5
-}
-func main() {
-	fmt.Println(f1())				//5
-	fmt.Println(f2())				//6
-	fmt.Println(f3())				//5
-    fmt.Println(f4())				//5
-}
-```
-
 * 函数类型：可以作为参数和返回值
 
 ```go
-func f1(x func() int) func(int, int) int {	//参数类型func() int，返回值类型func(int,int) int
+func f1(x func() int) func(int, int) int {	// 参数类型func() int，返回值类型func(int,int) int
     ret := func(a,b int)int{
         return a + b
     }
@@ -448,4 +431,252 @@ func f1(x func() int) func(int, int) int {	//参数类型func() int，返回值�
 }
 ```
 
-* 闭包：
+### defer
+
+* `defer`把后面语句延迟到函数即将返回时执行，多个defer则按先进后出顺序执行（file, 数据库, socket...）
+
+```go
+func calc(index string, a, b int) int {
+	ret := a + b
+	fmt.Println(index, a, b, ret)
+	return ret
+}
+
+func main() {
+	x := 1
+	y := 2
+	defer calc("AA", x, calc("A", x, y))	// 先calc("A", 1, 2): A 1 2 3, 再defer calc("AA", 1, 3)
+	x = 10
+	defer calc("BB", x, calc("B", x, y))	// 先calc("B", 10, 2): B 10 2 12, 再defer calc("BB", 10, 12)
+	y = 20
+}											// return之前执行defer：BB 10 12 22, AA 1 3 4
+```
+
+* `return`在底层并不是原子操作，它分为给返回值赋值和RET指令两步。而`defer`语句执行的时机就在返回值赋值操作后，RET指令执行前
+
+```go
+func f1() int {						// 返回值 = x, x++, RET返回值
+	x := 5
+	defer func() {
+		x++
+	}()
+	return x
+}
+func f2() (x int) {					// 返回值x = 5, x++, RET返回值x
+	defer func() {
+		x++
+	}()
+	return 5
+}
+func f3() (y int) {					// 返回值y = x, x++, RET返回值y
+	x := 5
+	defer func() {
+		x++
+	}()
+	return x
+}
+func f4() (x int) {					// 返回值x = 5, x的副本++, RET返回值x
+	defer func(x int) {
+		x++
+	}(x)
+	return 5
+}
+func main() {
+	fmt.Println(f1())				// 5
+	fmt.Println(f2())				// 6
+	fmt.Println(f3())				// 5
+    fmt.Println(f4())				// 5
+}
+```
+
+### 闭包
+
+函数 + 引用环境
+
+```go
+func calc(base int) (func(int) int, func(int) int) {
+	add := func(i int) int {
+		base += i
+		return base
+	}
+
+	sub := func(i int) int {
+		base -= i
+		return base
+	}
+	return add, sub
+}
+
+func main() {
+	f1, f2 := calc(10)				// f1, f2即闭包, base为f1及f2的一个公有引用环境
+	fmt.Println(f1(1), f2(2)) 		// 11 9
+	fmt.Println(f1(3), f2(4)) 		// 12 8
+	fmt.Println(f1(5), f2(6)) 		// 13 7
+    f3, f4 := calc(20)        		// f3, f4即闭包, base为f3及f4的一个公有引用环境
+	fmt.Println(f3(1), f4(2)) 		// 21 19
+	fmt.Println(f3(3), f4(4)) 		// 22 18
+	fmt.Println(f3(5), f4(6)) 		// 23 17
+}
+```
+
+### 错误处理
+
+`recover()`必须搭配`defer`使用，`defer`一定要在可能引发`panic`的语句之前定义
+
+```go
+func funcA() {
+	fmt.Println("func A")
+}
+
+func funcB() {
+	defer func() {
+		err := recover()
+		//如果程序出出现了panic错误,可以通过recover恢复过来
+		if err != nil {
+			fmt.Println("recover in B")
+		}
+	}()
+	panic("panic in B")
+}
+
+func funcC() {
+	fmt.Println("func C")
+}
+
+func main() {
+	funcA()
+	funcB()
+	funcC()
+}
+```
+
+## 接口
+
+## 包
+
+* 可见性：若想在另一个包中引用一个包里的标识符（如变量、常量、类型、函数等）时，该标识符必须是对外可见的，即标识符的首字母大写
+
+```go
+func Add(x, y int) int {	// 对外可见
+	return x + y
+}
+
+func age() { 				// 对外不可见
+	var Age = 18 			// 对外不可见
+	fmt.Println(Age)
+}
+
+type Student struct {
+	Name  string 			// 对外可见
+	class string 			// 对外不可见
+}
+
+type Payer interface {
+	init() 					// 对外不可见
+	Pay()  					// 对外可见
+}
+```
+
+* 导入：`import`
+
+```go
+// 调用这个包的函数时，可以省略前缀的包名：Println("hello world")
+ import(
+     . "fmt"
+ )
+// 给这个包起别名：f.Println("hello world")
+import(
+     f "fmt"
+ )
+// 引入该包，而不直接使用包里面的函数，而是调用了该包里面的init函数
+import (
+	    "database/sql"
+	    _ "github.com/ziutek/mymysql/godrv"
+	)
+```
+
+* 初始化函数：`init()`，执行导入包语句时自动调用，不能在代码中主动调用。执行时机：全局声明之后，`main()`之前
+
+![image-20210221232023592](TyporaPics/image-20210221232023592.png)
+
+## 文件
+
+# 标准库
+
+## fmt
+
+fmt包实现了类似C语言printf和scanf的格式化I/O，主要分为向外输出内容和获取输入内容两大部分
+
+### 输入
+
+### 输出
+
+## time
+
+time包提供了时间的显示和测量用的函数，日历的计算采用的是公历
+
+# Gin
+
+## 引入
+
+创建schedule项目
+
+```cmd
+mkdir schedule
+cd schedule
+go mod init schedule
+```
+
+创建schedule.go
+
+```go
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func sayHello(c *gin.Context){
+	c.JSON(200, gin.H{
+		"message": "Hello, Golang!",
+	})
+}
+
+func main() {
+	// 创建一个默认的路由引擎
+	r := gin.Default()
+	// 指定用户使用GET请求访问/hello时，执行sayHello这个函数
+	r.GET("/hello", sayHello)
+    // RESTful API 示例
+    r.GET("/book", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "GET, 查询",
+		})
+	})
+
+	r.POST("/book", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "POST, 创建",
+		})
+	})
+
+	r.PUT("/book", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "PUT, 更新",
+		})
+	})
+
+	r.DELETE("/book", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "DELETE, 删除",
+		})
+	})
+	// 启动服务
+	r.Run()
+}
+```
+
+```cmd
+go get -u github.com/gin-gonic/gin
+go mod tidy
+```

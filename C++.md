@@ -9,9 +9,9 @@
 using namespace std
 void main()
 {
-	int a[5]={1,2,3,4,5};				//a为数组名，当前为int*型指针常量，它的加减以4字节为单位
-	int *ptr=(int *)(&a+1);				//&a是指向整个数组的指针，它的加减会以20字节为单位
-	cout<<*(a+1)<<*(ptr-1);				//ptr是int*型指针，加减以4字节为单位，输出：2,5
+	int a[5]={1,2,3,4,5};				// a为数组名，当前为int*型指针常量，它的加减以4字节为单位
+	int *ptr=(int *)(&a+1);				// &a是指向整个数组的指针，它的加减会以20字节为单位
+	cout<<*(a+1)<<*(ptr-1);				// ptr是int*型指针，加减以4字节为单位，输出：2,5
 }
 ```
 
@@ -30,13 +30,13 @@ void main()
 #include<thread>
 using namespace std;
 int main(){
-    //创建可执行对象
-	void x1(){};	//可以是函数
-	auto x2=[]{};	//可以是lambda表达式
-	class x3{		//可以是类对象（需运算符重载）
+    // 创建可执行对象
+	void x1(){};	// 可以是函数
+	auto x2=[]{};	// 可以是lambda表达式
+	class x3{		// 可以是类对象（需运算符重载）
 		void operator()(){};
     };
-	//线程用法
+	// 线程用法
 	thread myThread1(可执行对象);
 	if(myThread1.joinable()){
         myThread1.join();
@@ -59,15 +59,15 @@ using namespace std;
 void add(const int &a) {
 	int& x = const_cast<int&>(a);
 	x = x + 1;
-	cout << a << endl;			//2
+	cout << a << endl;			// 2
 }
 int main()
 {
 	int a = 1;
-	cout << a << endl;			//1
+	cout << a << endl;			// 1
 	thread thread1(add,a);
 	thread1.join();
-	cout << a ;					//1
+	cout << a ;					// 1
 	return 0;
 }
 ```
@@ -80,15 +80,15 @@ int main()
 using namespace std;
 void add(int &a) {
 	a = a + 1;
-	cout << a << endl;			//2
+	cout << a << endl;			// 2
 }
 int main()
 {
 	int a = 1;
-	cout << a << endl;			//1
+	cout << a << endl;			// 1
 	thread thread1(add,ref(a);
 	thread1.join();
-	cout << a ;					//2
+	cout << a ;					// 2
 	return 0;
 }
 ```
@@ -125,9 +125,9 @@ public:
 	void addMoney(int money){
  		lock_guard<mutex> lockGuard(mutex);
  		for (int i = 0; i < mMoney; ++i)
-    	//如果在此处发生异常，lockGuard的析构函数将会因为堆栈展开而被调用
+    	// 如果在此处发生异常，lockGuard的析构函数将会因为堆栈展开而被调用
     	mMoney++;
-    	//函数退出，lockGuard对象的析构函数将被调用，在析构函数中mutex会被释放
+    	// 函数退出，lockGuard对象的析构函数将被调用，在析构函数中mutex会被释放
 	}
 };
 ```
