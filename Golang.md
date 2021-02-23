@@ -48,20 +48,21 @@ go build
 
 ```go
 // "var name =" 在函数体内可与 "name :=" 等价替换
-// 定义值类型（自动初始化）：int:0,  bool:false,  string:"",  数组按长度自动填充
+// 定义值类型（自动初始化）：int:0,  bool:false,  string:"",  数组按长度自动填充,  结构体内字段自动填充
 // 定义指针类型（自动置为nil），用new定义（自动初始化）：即指向的内存自动填充
 // 定义引用类型（自动置为nil），用make定义（自动初始化）：slice:按长度自动填充,  map:[]
 ```
 
 ### 变量
 
-* 类型
+* 标准类型
   * 带符号整型：int8  int16  int32  int64  int(32位系统为int32，64位系统为int64)
   * 无符号整型：uint8  uint16  uint32  uint64  uint(32位系统为uint32，64位系统为uint64)
   * 浮点型：float32  float64  complex64（实部和虚部为32位）  complex128（实部和虚部为64位）
   * 布尔型：true  false（不能转为其他类型）
   * 指针型：uintptr
   * 字符串：string
+* 自定义类型：`type ages int`  `type money float32`  `type months map[string]int`
 * 类型别名：`rune`和`byte`就是类型别名，他们的定义如下：`type byte = uint8`  `type rune = int32`
 * 定义：`var name type`（可批量，自动初始化）
 * 定义并初始化：
@@ -163,6 +164,62 @@ func main() {
 	fmt.Println(a)  				// [[1 1] [1 1] [1 1]]
 }
 ```
+
+### 结构体
+
+* 结构体占用一块连续的内存，空结构体不占用空间
+
+* 声明
+
+```go
+type person struct {
+	name, city string
+	age        int8
+}
+```
+
+* 定义：
+  * `var p1 person`（自动初始化）
+  * `var p1 = new(person)`（自动初始化）（虽然返回结构体指针，一般用`(*p1).name = "wang"`但也支持`p1.name = "wang"`的方式赋值）
+* 定义并初始化：`P := person{age:24, name:"Tom"}`（若按顺序初始化所有字段时，则key可省略）
+* 支持匿名字段，嵌套结构体（字段可以继承和重载，method可以继承和重写）
+
+```go
+type human struct {
+	name  string
+	age   int
+	phone string	 	// human的phone字段
+}
+
+type student struct {
+	human  				// 匿名字段human, 那么student继承了human所有字段及method
+	school string
+}
+
+type employee struct {
+	human  			 	// 匿名字段human, 那么employee继承了human所有字段及method
+	company string
+	phone   string 		// employee的phone字段, 同名字段最外层优先访问（重载）
+}
+
+// human的method
+func (h *human) SayHi() {
+	fmt.Printf("Hi, I am %s you can call me on %s\n", h.name, h.phone)
+}
+
+// employee的method（重写）
+func (e *employee) SayHi() {
+	fmt.Printf("Hi, I am %s, I work at %s. Call me on %s. My personal phone is:%s\n", e.name,
+		e.company, e.phone, e.human.phone)
+}
+
+func main() {
+	mark := student{human{"Mark", 25, "222-222-YYYY"}, "MIT"}
+	Bob := employee{human{"Bob", 34, "777-444-XXXX"}, "Golang Inc", "333-222"}
+	mark.SayHi()
+	Bob.SayHi()
+}
+```
 ### 指针（指针类型）
 
 * 定义：
@@ -170,12 +227,12 @@ func main() {
   * `var name = new(type)`（自动初始化）
 * 定义并初始化：
   * `var name = &a`
-
 * 不支持指针运算，取地址：'&'，指针取值：'*'
-
 * new：一般用来给基本数据类型申请内存，返回对应类型指针
-
 * make：只用于slice, map, chan的内存创建，返回这三个类型本身
+* Go知道你要做的一切，会自动转换：
+  * 如果一个method的receiver是\*T，可以在一个T类型的实例变量V上面调用这个method，而不需要&V去调用这个method
+  * 如果一个method的receiver是T，可以在一个\*T类型的变量P上面调用这个method，而不需要\*P去调用这个method
 ### 切片 - 动态数组（引用类型）
 
 * 定义：
@@ -364,24 +421,6 @@ func main() {
 }
 ```
 
-### 结构体
-
-* 结构体占用一块连续的内存，空结构体不占用空间
-
-* 声明
-
-```go
-type person struct {
-	name, city string
-	age        int8
-}
-```
-
-* 定义：
-  * `var p1 person`（自动初始化）
-  * `var p1 = new(person)`（自动初始化）（虽然返回结构体指针，但支持`p1.name="wang"`的方式赋值）
-* 定义并初始化：`P := person{age:24, name:"Tom"}`（若按顺序初始化所有字段时，则key可省略）
-
 ## 函数
 
 ### 基础
@@ -519,6 +558,49 @@ func main() {
 }
 ```
 
+### method
+
+`method`是附属在一个给定的类型上的，他的语法和函数的声明语法几乎一样，只是在`func`后面增加了一个receiver(也就是method所依从的主体)
+
+```go
+import (
+	"fmt"
+	"math"
+)
+
+type Rectangle struct {
+	width, height float64
+}
+
+type Circle struct {
+	radius float64
+}
+
+func (r Rectangle) area() float64 {				// method里面可以访问接收者的字段
+	return r.width*r.height
+}
+
+func (c Circle) area() float64 {				// 虽然method的名字一样，但是如果接收者不一样，那么method就不一样
+	return c.radius * c.radius * math.Pi
+}
+
+func main() {
+	r1 := Rectangle{12, 2}
+	r2 := Rectangle{9, 4}
+	c1 := Circle{10}
+	c2 := Circle{25}
+
+	fmt.Println("Area of r1 is: ", r1.area())	// 通过.调用method
+	fmt.Println("Area of r2 is: ", r2.area())
+	fmt.Println("Area of c1 is: ", c1.area())
+	fmt.Println("Area of c2 is: ", c2.area())
+}
+```
+
+### interface
+
+是一组method的集合，如果某个类型实现了某个接口的所有方法，则此类型就实现了此接口
+
 ### 错误处理
 
 `recover()`必须搭配`defer`使用，`defer`一定要在可能引发`panic`的语句之前定义
@@ -549,8 +631,6 @@ func main() {
 	funcC()
 }
 ```
-
-## 接口
 
 ## 包
 
@@ -600,6 +680,107 @@ import (
 ![image-20210221232023592](TyporaPics/image-20210221232023592.png)
 
 ## 文件
+
+### 读文件
+
+* 利用bufio
+
+```go
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+)
+
+func main() {
+    // 打开关闭文件
+	file, err := os.Open("./hello.go")
+	if err != nil {
+		fmt.Println("open file failed, err:", err)
+		return
+	}
+	defer file.Close()
+    
+    // bufio按行读取
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		if err == io.EOF {
+			if len(line) != 0 {
+				fmt.Println(line)
+			}
+			fmt.Println("文件读完了")
+			break
+		}
+		if err != nil {
+			fmt.Println("read file failed, err:", err)
+			return
+		}
+		fmt.Print(line)
+	}
+}
+```
+
+* 利用ioutil
+
+```go
+import (
+	"fmt"
+	"io/ioutil"
+)
+
+func main() {
+	content, err := ioutil.ReadFile("./hello.go")
+	if err != nil {
+		fmt.Println("read file failed, err:", err)
+		return
+	}
+	fmt.Println(string(content))
+}
+```
+
+### 写文件
+
+* 利用bufio
+
+```go
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+func main() {
+	file, err := os.OpenFile("xx.txt", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Println("open file failed, err:", err)
+		return
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	writer.WriteString("Golang") 	//将数据先写入缓存
+	writer.Flush()               	//将缓存中的内容写入文件
+}
+```
+
+* 利用ioutil
+
+```go
+import (
+	"fmt"
+	"io/ioutil"
+)
+
+func main() {
+	str := "Golang"
+	err := ioutil.WriteFile("./xx.txt", []byte(str), 0666)
+	if err != nil {
+		fmt.Println("write file failed, err:", err)
+		return
+	}
+}
+```
 
 # 标准库
 
