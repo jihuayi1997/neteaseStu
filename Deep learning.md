@@ -4,30 +4,38 @@
 
 ### 1. Summary
 
-Supervised Learning
+* 神经网络引入：
+  * Single neural network
 
-* Standard Neural Net
-  * Real Estate : Home features...Price
-  * Online Advertising : Ad,uer info...Click on ad?
+    ![image-20210225233654191](TyporaPics/image-20210225233654191.png)
 
-* Convolutional Neural Network
-  * Photo tagging : Image...Object(1,...,1000)
-* Recurrent NN
-  * Speech recognition : Audio...Text transcript
-  * Machine translation : English...Chinese
+  * Multiple neural network
 
-* Hybrid NN
-  * Autonomous driving : Image,Radar info...Position of other cars
+    ![image-20210225233717481](TyporaPics/image-20210225233717481.png)
 
-Structured Data : databases of data
+* 神经网络的监督学习：
 
-Unstructured Data : audio,raw audio,images,text
+  * Standard Neural Net
+    * Real Estate : Home features...Price
+    * Online Advertising : Ad,uer info...Click on ad?
 
-Scale drives deep learning progress
+  * Convolutional Neural Network
+    * Photo tagging : Image...Object(1,...,1000)
+  * Recurrent NN
+    * Speech recognition : Audio...Text transcript
+    * Machine translation : English...Chinese
 
-* Data
-* Computation
-* Algorithms : sigmod...rectified linear unit (ReLU)
+  * Hybrid NN
+    * Autonomous driving : Image,Radar info...Position of other cars
+
+* 数据类型：
+
+  ![image-20210225234629795](TyporaPics/image-20210225234629795.png)
+
+* Scale drives deep learning progress
+  * Data
+  * Computation
+  * Algorithms : sigmod...rectified linear unit (ReLU)
 
 ### 2. Basic
 

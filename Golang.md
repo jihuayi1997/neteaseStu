@@ -169,7 +169,7 @@ func main() {
 
 * 结构体占用一块连续的内存，空结构体不占用空间
 
-* 声明
+* 声明：
 
 ```go
 type person struct {
