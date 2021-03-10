@@ -246,7 +246,7 @@ toc=time.perf_counter()
 print(c)
 print("Vectorized version:"+str(1000*(toc-tic))+"ms")	#向量化:≈0.6ms
 
-#继续增加非向量化的版本
+#非向量化的版本
 c=0
 tic=time.perf_counter()
 for i in range(1000000):
