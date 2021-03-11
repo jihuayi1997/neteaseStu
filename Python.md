@@ -142,9 +142,20 @@
 
    iter变量除最后元素外每个元素后增加个str：`str.join(iter)`，主要用于字符串分隔
 
-9. 槽的格式控制：
+9. 字符串类型的格式化：
+
+   使用槽机制+format方法：`<模板字符串>.format(<逗号分隔的参数>)`
+   
+   ![image-20210311142752747](TyporaPics/image-20210311142752747.png)
+   
+10. 槽内部的格式控制：
 
    ![image-20191205160634404](TyporaPics/image-20191205160634404.png)
+
+   <center class="half">
+       <img src="TyporaPics/image-20210311141553355.png" width="550" height="360"/>
+       <img src="TyporaPics/image-20210311142146277.png" width="550" height="360"/>
+   </center>
 
 ## time库
 
@@ -160,23 +171,25 @@
 
    程序休眠：`sleep(s)` ，s可以是浮点数
 
-2. 文本进度条设计函数
+2. 文本进度条demo
 
    ```python
    import time
-   scale=50
-   print("begin".center(scale//2,'-'))
-   start=time.perf_counter()
+   scale = 50
+   print("begin".center(scale//2, '-'))
+   start = time.perf_counter()
    for i in range(scale+1):
-       a='*'*i
-       b='.'*(scale-i)
-       c=(i/scale)*100
-       dur=time.perf_counter()-start
-       #其中\r表示光标回到行首，end=''表示不换行
-       print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
+       a = '*'*i
+       b = '.'*(scale-i)
+       c = (i/scale)*100
+       dur = time.perf_counter()-start
+       # 用后打印的字符覆盖之前的字符：其中\r表示光标回到行首，end=''表示不换行
+       print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c, a, b, dur), end='')
        time.sleep(0.1)
-   print("\n"+"end".center(scale//2,'-'))
+   print("\n"+"end".center(scale//2, '-'))
    ```
+
+3. 文本进度条设计函数
 
 ![image-20191210163122555](TyporaPics/image-20191210163122555.png)
 
@@ -185,33 +198,39 @@
 1. 分支结构
 
    ```python
-   # -*- coding: utf-8 -*-
+   # 异常处理机制
    try:
-       score=eval(input())
-       if score>=90:
-           grade='A'
-       elif score>=80:
-           grade='B'
-       elif score>=70:
-           grade='C'
+       # eval(str): 返回str(字符串表达式)的计算结果
+       score = eval(input())
+       if score >= 90:
+           grade = 'A'
+       elif score >= 80:
+           grade = 'B'
+       elif score >= 70:
+           grade = 'C'
        else:
            grade='D'
        print("成绩等级为{}".format(grade))
-   except NameError:
+   except NameError:							# except语句块：异常时执行
        print("输入的不是整数！")
-   except SyntaxError:
+   except SyntaxError:							# except语句块：异常时执行
        print("没有输入！")
-   else:										#else正常执行的奖励（无异常）
+   else:										# else语句块：无异常时执行
        print("程序正常执行。")
+   finally:									# finally语句块：一定执行
+       print("运行结束。")
    ```
 
-   二分支可以写成紧凑结构（但对应的只可以是表达式不可以是语句）
+   二分支可以写成紧凑结构（但对应的执行块只可以是表达式不可以是语句）
 
-   `print("猜{}了".format("对" if guess==99 else "错"))`
+   ```python
+   guess = eval(input())
+   print("猜{}了".format("对" if guess == 99 else "错"))
+   ```
 
 2. 循环结构
 
-   计数循环：`for i in range(M,N,K) :`（产生M到N-1整数序列，步长为K）
+   计数循环：`for i in range(M,N,K) :`（产生M到N-1整数序列，步长为K，产生循环，M缺省 = 0，K缺省 = 1）
 
    字符串遍历循环：`for c in range s :`（s是字符串，遍历字符串每个字符，产生循环）
 
@@ -223,7 +242,7 @@
 
    支持while条件循环
 
-   支持break,continue,else(正常执行的奖励(无break))
+   支持break(结束一层循环), continue(结束一层的一次循环), else(正常执行的奖励(未break))
 
 ## random库
 
@@ -244,29 +263,107 @@
 `random.shuffle(seq)`：将seq序列随机重新排列
 
 ```python
-#蒙特卡罗方法计算圆周率
+# 蒙特卡罗方法计算圆周率
 import random as rd
-DARTS=1000*1000
-hits=0.0
-for i in range(1,DARTS+1):
-    x,y=rd.random(),rd.random()
-    dist=pow(x**2+y**2,0.5)
-    if dist<=1.0:
-        hits+=1
-pi=4*hits/DARTS
+DARTS = 1000*1000					# DARTS: 撒点总数
+hits = 0.0							# hits: 撒点后，圆内部的点数量
+for i in range(1, DARTS+1):
+    x, y = rd.random(), rd.random()
+    dist = pow(x**2+y**2, 0.5)		# dist: 到坐标原点的距离，小于1则在圆内
+    if dist <= 1.0:
+        hits += 1
+pi = 4*(hits/DARTS)
 print("圆周率值为：{}".format(pi))
 ```
 
 ## 函数
 
-使用def定义函数，支持可选参数（赋初值）和可变参数（*b），函数可以返回0个或多个结果
+使用def定义函数，支持可选参数（即赋初值，要在必选参数的后面）和可变参数（*b），函数可以返回0个或多个结果
 
-局部变量和全局变量是不同变量，若想在函数内部中声明全局变量使用`global`
-
-组合数据类型，如果局部变量未真实创建，则是全局变量
-
-支持lambda定义匿名函数：`f = lambda x,y :x+y`（冒号后面只能是表达式）
+有全局变量、局部变量的概念，可见性与C相同，但在函数内修改全局变量与C稍有不同（因为Python无需声明变量就可以直接使用）
 
 ```python
+a = 10
+b = [1, 2, 3]
 
+
+def modifyA():			# 在函数内部使用外部全局变量（基本数据类型），需使用global声明才可以修改
+    global a
+    a = a - 1
+    print(a)
+
+
+def modifyA():
+    print(a)
+    a = a-1				# 错误：在函数内部使用外部全局变量（基本数据类型），不用global声明，默认a为新的局部变量，但并未初始化所以无法执行
+
+
+def modifyB():
+    b[0] = 9			# 在函数内部使用外部全局变量（组合数据类型），可以直接修改
+    print(b)
+
+
+modifyA()
+modifyB()
+```
+
+支持lambda定义匿名函数：`f = lambda x,y :x+y`（冒号前面为函数参数，冒号后面为函数的返回值，只能是表达式）
+
+```python
+# 七段数码管绘制当前日期
+import turtle
+import time
+
+
+def drawGap():  # 绘制数码管间隔
+    turtle.penup()
+    turtle.fd(5)
+
+
+def drawLine(draw):  # 绘制单段数码管
+    drawGap()
+    turtle.pendown() if draw else turtle.penup()
+    turtle.fd(40)
+    drawGap()
+    turtle.right(90)
+
+
+def drawDigit(digit):  # 根据数字绘制七段数码管
+    drawLine(True) if digit in [2, 3, 4, 5, 6, 8, 9] else drawLine(False)
+    drawLine(True) if digit in [0, 1, 3, 4, 5, 6, 7, 8, 9] else drawLine(False)
+    drawLine(True) if digit in [0, 2, 3, 5, 6, 8, 9] else drawLine(False)
+    drawLine(True) if digit in [0, 2, 6, 8] else drawLine(False)
+    turtle.left(90)
+    drawLine(True) if digit in [0, 4, 5, 6, 8, 9] else drawLine(False)
+    drawLine(True) if digit in [0, 2, 3, 5, 6, 7, 8, 9] else drawLine(False)
+    drawLine(True) if digit in [0, 1, 2, 3, 4, 7, 8, 9] else drawLine(False)
+    turtle.left(180)
+    turtle.penup()
+    turtle.fd(20)
+
+
+def drawDate(date):  # 根据日期绘制数码管，日期格式为'%Y-%m=%d+'
+    turtle.pencolor("red")
+    for i in date:
+        if i == '-':
+            turtle.write('年', font=("Arial", 18, "normal"))
+            turtle.pencolor("green")
+            turtle.fd(40)
+        elif i == '=':
+            turtle.write('月', font=("Arial", 18, "normal"))
+            turtle.pencolor("blue")
+            turtle.fd(40)
+        elif i == '+':
+            turtle.write('日', font=("Arial", 18, "normal"))
+        else:
+            drawDigit(eval(i))
+
+
+turtle.setup(800, 350, 200, 200)
+turtle.penup()
+turtle.fd(-300)
+turtle.pensize(5)
+drawDate(time.strftime("%Y-%m=%d+", time.gmtime()))
+turtle.hideturtle()
+turtle.done()
 ```
