@@ -4,59 +4,56 @@
 
 1. 主要方法
 
-   构造一个请求，支撑下面方法：`requests.request(method,url,**kwargs)`
+   `requests.request(method, url, **kwargs)`：构造一个请求，支撑下面方法
 
-   获取HTML网页主要方法，对应HTTP的GET：`requests.get(url,params=None,**kwargs)`
+   `requests.get(url, params=None, **kwargs)`：获取HTML网页主要方法，对应HTTP的GET
 
-   获取HTML网页头信息的方法，对应于HTTP的HEAD：`requests.head()`
+   `requests.head(url, **kwargs)`：获取HTML网页头信息的方法，节约带宽，对应于HTTP的HEAD
 
-   ​	**只获得头部，节约带宽**
-
-   向HTML网页提交POST请求的方法，url后附加新数据，对应HTTP的POST：`requests.post()`
+   `requests.post(url, data=None, json=None, **kwargs)`：向HTML网页提交POST请求的方法，url后附加新数据，对应HTTP的POST
 
    ![image-20191209104152946](TyporaPics/image-20191209104152946.png)
 
    ![image-20191209104242634](TyporaPics/image-20191209104242634.png)
 
-   向HTML网页提交PUT请求的方法，覆盖url位置资源，对应HTTP的PUT：`requests.put()`
+   `requests.put(url, data=None, **kwargs)`：向HTML网页提交PUT请求的方法，覆盖原url位置的资源，对应HTTP的PUT
 
-   ​	**put()方法与post()类似，区别只是覆盖**
+   `requests.patch(url, data=None, **kwargs)`：向HTML网页提交局部修改请求，patch()只需提交修改字段，节约带宽，对应HTTP的PATCH
 
-   向HTML网页提交局部修改请求，对应HTTP的PATCH：`requests.patch()`
-
-   ​	**patch()只需提交修改字段，节约带宽**
-
-   向HTML页面提交删除请求，对应HTTP的DELETE：`requests.delete()`
+   `requests.delete(url, **kwargs)`：向HTML页面提交删除请求，对应HTTP的DELETE
 
 2. Response对象的属性
 
-   HTTP请求返回状态：`r.status_code`
+   `r.status_code`：HTTP请求返回状态，200表示连接成功，404表示失败
 
-   HTTP相应内容的字符串形式：`r.text`
+   `r.text`：HTTP相应内容的字符串形式，即url对应的页面内容
 
-   从HTTP header中猜测的响应内容编码方式：`r.encoding`
+   `r.encoding`：从HTTP header中猜测的响应内容编码方式，若header中不存在charset，则认为编码为"ISO-8859-1"
 
-   ​	**若header中不存在charset，则认为r.encoding为'ISO-8859-1'**
+   `r.apparent_encoding`：从内容中分析的响应内容编码方式
 
-   从内容中分析的响应内容编码方式：`r.apparent_encoding`
-
-   HTTP响应内容的二进制形式：`r.content`
+   `r.content`：HTTP响应内容的二进制形式
 
 3. 通用代码框架
 
    ```python
    import requests
-   def getHTMLText(url)
-   	try:
-           r=requests.get(url,timeout=30)
-           r.raise_for_status()	#如果状态不是200，引发HTTPError异常
-           r.encoding=r.apparent_encoding
+   
+   
+   def getHTMLText(url):
+       try:
+           r = requests.get(url, timeout=30)
+           r.raise_for_status()  # 如果状态不是200，引发HTTPError异常
+           r.encoding = r.apparent_encoding
            return r.text
        except:
            return "exception occur"
-   if _name_=="_main_"
-   	url="http://www.baidu.com"
+   
+   
+   if __name__ == '__main__':
+       url = "http://www.baidu.com"
        print(getHTMLText(url))
    ```
 
-4. 
+## 盗亦有道
+
