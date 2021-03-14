@@ -1,5 +1,7 @@
 # Linux
 
+## 基础指令
+
 ```bash
 yum update										#升级包及系统内核
 uname -a										#查看系统信息
@@ -12,3 +14,8 @@ systemctl stop firewalld						#关闭防火墙
 whoami											#查看当前用户
 ```
 
+## 并发编程
+
+
+
+## 网络编程
