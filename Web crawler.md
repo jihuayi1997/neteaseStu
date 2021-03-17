@@ -9,8 +9,10 @@
 
 可能遇到Proxy Error的问题（新版pip和urllib3支持了https，而windows的系统代理默认只支持http代理）
 
-* 增加：`proxies = {"http": "http://127.0.0.1:7890", "https": "http://127.0.0.1:7890"}`，修改：`requests.get(url, proxies=proxies)`
-* 配置环境变量"HTTPS_PROXY"值为"http://127.0.0.1:7890"
+* PAC + TUN + HTTPS_PROXY=http://127.0.0.1
+* PAC + TUN
+  * `proxies = {"http": "http://127.0.0.1:7890", "https": "http://127.0.0.1:7890"}`
+  * `requests.get(url, proxies=proxies)`
 
 ## Requests库
 
