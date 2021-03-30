@@ -263,6 +263,7 @@ print("For loop:"+str(1000*(toc-tic))+"ms")				#for循环:≈600ms
 * 常用numpy库函数
   * 计算各元素指数值：`np.exp(v)`
   * 计算各元素对数值：`np.log10(v)`
+  * 计算各元素绝对值：`np.abs(v)`
   * 比较最大值：`np.maximum(v,0)`
   * 返回最大的元素：`np.max(v)`
 
@@ -296,4 +297,3 @@ assert(a.shape==(5,1))					#确保Matrix形状，无需吝啬使用
 ### 3. 浅层神经网络
 
 ### 4. 深层神经网络
-

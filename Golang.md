@@ -48,9 +48,9 @@ go build
 
 ```go
 // "var name =" 在函数体内可与 "name :=" 等价替换
-// 定义值类型（自动初始化）：int: 0,  bool: false,  string: "",  数组按长度自动填充,  结构体内字段自动填充
+// 定义值类型（自动初始化）：int:0,  bool:false,  string:"",  数组按长度自动填充,  结构体内字段自动填充
 // 定义指针类型（自动置为nil），用new定义（自动初始化）：即指向的内存自动填充
-// 定义引用类型（自动置为nil），用make定义（自动初始化）：slice: 按长度自动填充,  map:[],  channel: 传递对应类型的内存通道
+// 定义引用类型（自动置为nil），用make定义（自动初始化）：slice:按长度自动填充,  map:[],  chan:传递对应类型的内存通道
 ```
 
 ### (1). 变量
@@ -984,7 +984,7 @@ func main() {
 }
 ```
 
-一般不Sleep(), 而是使用`sync.WaitGroup`来实现goroutine的同步
+一般不用Sleep(), 而是使用`sync.WaitGroup`来实现goroutine的同步
 
 ```go
 var wg sync.WaitGroup
@@ -993,6 +993,7 @@ func hello(i int) {
 	defer wg.Done() 					// goroutine结束就done -1
 	fmt.Printf("Goroutine%d!\t", i)
 }
+
 func main() {
 
 	for i := 0; i < 4; i++ {
@@ -1003,49 +1004,84 @@ func main() {
 }
 ```
 
-调用 `runtime.GOMAXPROCS(n) `设置同时运行逻辑代码的系统线程的最大数量n，并返回之前的设置。如果n < 1，不会改变当前设置
+调用 `runtime.GOMAXPROCS(n) `设置同时运行逻辑代码的系统线程的最大数量n，并返回之前的设置。如果n < 1，不会改变当前设置，默认跑满CPU
 
 ### (2). channel（引用类型）
 
 * Go语言的并发模型是`CSP（Communicating Sequential Processes）`，提倡**通过通信共享内存**
 * goroutine运行在相同的地址空间，因此访问共享内存必须做好同步。Go提供了一个很好的通信机制channel
-* channel可以与Unix shell 中的双向管道做类比：可以通过它发送或者接收值。这些值只能是特定的类型：channel类型。
+* channel可以与Unix shell 中的双向管道做类比，可以通过它发送或者接收值，这些值只能是特定的类型
 
 * 定义：
   * `var name chan type`（自动置为nil）
-  * `var name = make(chan type)`（自动初始化）
+  * `var name = make(chan type, buflen)`（自动初始化）
 
-* channel通过操作符`<-`来接收和发送数据
 
-```go
-ch <- a    // 发送a到channel ch中
-b := <-ch  // 从ch中接收数据，并赋值给b
-```
-
-* 例子：
+* 无缓冲的通道
 
 ```go
-func sum(a []int, c chan int) {
-	total := 0
-	for _, v := range a {
-		total += v
-	}
-	c <- total  // send total to c
+func recv(ch chan int) {
+	ret := <-ch						// 从ch中接收数据，并赋值给ret
+	fmt.Println("接收成功", ret)
 }
 
 func main() {
-	a := []int{7, 2, 8, -9, 4, 0}
-
-	c := make(chan int)
-	go sum(a[:len(a)/2], c)
-	go sum(a[len(a)/2:], c)
-	x, y := <-c, <-c  // receive from c
-
-	fmt.Println(x, y, x + y)
+	ch := make(chan int)			// 创建可发送接收int型数据的无缓冲通道ch
+	go recv(ch) 					// 启用新goroutine从通道接收值，不然无缓冲的通道会在下面阻塞，形成deadlock
+	ch <- 10						// 发送数据10到ch中
+	fmt.Println("发送成功")
 }
 ```
 
-默认情况下，channel接收和发送数据都是阻塞的，除非另一端已经准备好，这样就使得Goroutines同步变的更加的简单，而不需要显式的lock。所谓阻塞，也就是如果读取（value := <-ch）它将会被阻塞，直到有数据接收。其次，任何发送（ch<-5）将会被阻塞，直到数据被读出。无缓冲channel是在多个goroutine之间同步很棒的工具。
+* 有缓冲的通道
+
+```go
+func main() {
+	ch := make(chan int, 1) 		// 创建一个容量为1的有缓冲区通道
+	ch <- 10						// 不会阻塞（此时再发送新的就会阻塞形成deadlock）
+	fmt.Println("发送成功")
+}
+```
+
+* 支持for range遍历channel（需搭配close使用）
+
+```go
+func fibonacci(n int, c chan int) {
+	x, y := 1, 1
+	for i := 0; i < n; i++ {
+		c <- x
+		x, y = y, x+y
+	}
+	close(c)								// 显式关闭channel，之后无法再发送任何数据
+}
+
+func main() {
+	c := make(chan int, 10)
+	go fibonacci(cap(c), c)
+	for i := range c {						// 能够不断地读取channel里面的数据，直到该channel被显式地关闭
+		fmt.Printf("%d ", i)				// 1 1 2 3 5 8 13 21 34 55 
+	}
+}
+```
+
+* 支持select多路复用，每个case对应一个通道的通信（类似switch）
+* select默认是阻塞的，只有当监听的channel中有发送或接收可以进行时才会运行，当多个channel都准备好的时候，select随机的选择一个执行
+
+```go
+// 输出：0 2 4 6 8 
+func main() {
+	ch := make(chan int, 1)
+	for i := 0; i < 10; i++ {
+		select {
+		case x := <-ch:						// 当ch中读出一个值：输出该值
+			fmt.Printf("%d ", x)
+		case ch <- i:						// 当ch中写入一个值：nothing
+        default:							// 当监听的channel都没有准备好的时候，默认执行的(有default时select不再阻塞等待channel)
+			ch <- 10
+		}
+	}
+}
+```
 
 ## 7. 网络编程
 
