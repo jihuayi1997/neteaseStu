@@ -62,8 +62,8 @@ go build
   * 布尔型：true  false（不能转为其他类型）
   * 指针型：uintptr
   * 字符串：string
-* 自定义类型：`type ages int`  `type money float32`  `type months map[string]int`
-* 类型别名：`rune`和`byte`就是类型别名，他们的定义如下：`type byte = uint8`  `type rune = int32`
+* 自定义类型：`type ages int`，`type money float32`，`type months map[string]int`
+* 类型别名：`rune`和`byte`就是类型别名，他们的定义如下：`type byte = uint8`，`type rune = int32`
 * 定义：`var name type`（可批量，自动初始化）
 * 定义并初始化：
   * `var name = value`
@@ -192,7 +192,7 @@ type person struct {
 
     `p := newPerson("liming", 18)`（再调用构造函数）
 
-* 支持匿名字段，嵌套结构体（字段可以继承和重载，method可以继承和重写）
+* 支持匿名字段，嵌套结构体（字段和method可以继承和重载，被重载的进入内层）
 
 ```go
 type human struct {
@@ -209,7 +209,7 @@ type student struct {
 type employee struct {
 	human  			 	// 匿名字段human, 那么employee继承了human所有字段及method
 	company string
-	phone   string 		// employee的phone字段, 同名字段最外层优先访问（重载）
+    phone   string 		// employee的phone字段(重载), 被重载的phone成为human.phone
 }
 
 // human的method
@@ -217,7 +217,7 @@ func (h *human) SayHi() {
 	fmt.Printf("Hi, I am %s you can call me on %s\n", h.name, h.phone)
 }
 
-// employee的method（重写）
+// employee的method(重载), 被重载的SayHi()成为human.SayHi()
 func (e *employee) SayHi() {
 	fmt.Printf("Hi, I am %s, I work at %s. Call me on %s. My personal phone is:%s\n", e.name,
 		e.company, e.phone, e.human.phone)
@@ -228,18 +228,12 @@ func main() {
 	Bob := employee{human{"Bob", 34, "777-444-XXXX"}, "Golang Inc", "333-222"}
 	mark.SayHi()
 	Bob.SayHi()
+    Bob.human.SayHi()
 }
 ```
 * 支持序列化与反序列化
 
 ```go
-package main
-
-import (
-	"encoding/json"
-	"fmt"
-)
-
 // 声明结构体person, 提出解析要求（注意结构体内字段首字母大写，不然json包读取不到）
 type person struct {
 	Name string `json:"name" db:"name" ini:"name"`
@@ -247,20 +241,24 @@ type person struct {
 }
 
 func main() {
-	fmt.Println("hello")
 	// 定义并初始化 p1
 	p1 := person{Name: "liming", Age: 18}
 	fmt.Printf("%+v\n", p1)											// %+v, 字段+值, {Name:liming Age:18}
+    
     // 序列化 参数类型: 结构体 返回类型: []byte, err
-	a, err := json.Marshal(p1)
+	jsonbyte, err := json.Marshal(p1)
 	if err != nil {
 		fmt.Printf("Marshal failed, err:%v", err)
 	}
-	fmt.Println(string(a))											// {"name":"liming","age":18}
+	fmt.Println(string(jsonbyte))									// {"name":"liming","age":18}
+    
     // 反序列化 参数类型: []byte, 接收的结构体指针 返回类型: err
-	str := `{"name":"liming","age":18}`
+	jsonstr := `{"name":"liming","age":18}`
 	var p2 person
-	json.Unmarshal([]byte(str), &p2)
+	err = json.Unmarshal([]byte(jsonstr), &p2)
+	if err != nil {
+		fmt.Printf("Unmarshal failed, err:%v", err)
+	}
 	fmt.Printf("%#v", p2)											// %#v, 名+字段+值, main.person{Name:"liming", Age:18}
 }
 ```
@@ -278,6 +276,7 @@ func main() {
 * Go知道你要做的一切，会自动转换：
   * 如果一个method的receiver是\*T，可以在一个T类型的实例变量V上面调用这个method，而不需要&V去调用这个method
   * 如果一个method的receiver是T，可以在一个\*T类型的变量P上面调用这个method，而不需要\*P去调用这个method
+
 ### (7). 切片（引用类型）
 
 * 引入：有点类似动态数组
@@ -347,7 +346,7 @@ func main(){
 }
 ```
 
-* 切片的复制：`copy(dest,src)`，可以将一个切片的数据复制到另一个切片空间中
+* 切片的复制：`copy(dest,src)`，将一个切片的数据复制到另一个切片空间中
 
 ```go
 func main() {
@@ -405,14 +404,17 @@ func main() {
 * 定义：
   * `var name map[key_type]value_type`（自动置为nil）
   * `var name = make(map[key_type]value_type,cap)`（自动初始化）
+* 定义并初始化：`var name = map[int]string{1: "C++", 2: "Golang"}`
 * 判断某个键是否存在：`value, ok := map[key]`
 
 ```go
 func main() {
 	scoreMap := make(map[string]int)
+    // 添加两个元素，此方式也可修改某key对应的value
 	scoreMap["张三"] = 90
 	scoreMap["小明"] = 100
-	// 如果key存在ok为true,v为对应的值；不存在ok为false,v为值类型的零值
+    // 若key存在: ok为true, v为对应的值
+    // 若key不存在: ok为false, v为值类型的零值
 	v, ok := scoreMap["张三"]
 	if ok {
 		fmt.Println(v)
@@ -540,7 +542,9 @@ func main() {
 }											// return之前执行defer：BB 10 12 22, AA 1 3 4
 ```
 
-* `return`在底层并不是原子操作，它分为给返回值赋值和RET指令两步。而`defer`语句执行的时机就在返回值赋值操作后，RET指令执行前
+* `return`在底层并不是原子操作，它分为**给返回值赋值**和**RET指令**两步
+
+  `defer`语句执行的时机就在返回值赋值操作后，RET指令执行前
 
 ```go
 func f1() int {						// 返回值 = x, x++, RET返回值
@@ -606,6 +610,7 @@ func main() {
 	fmt.Println(f3(5), f4(6)) 		// 23 17
 }
 ```
+
 **错误处理**
 
 `recover()`必须搭配`defer`使用，`defer`一定要在可能引发`panic`的语句之前定义
@@ -618,7 +623,7 @@ func funcA() {
 func funcB() {
 	defer func() {
 		err := recover()
-		//如果程序出出现了panic错误,可以通过recover恢复过来
+		// 如果程序出出现了panic错误,可以通过recover恢复过来
 		if err != nil {
 			fmt.Println("recover in B")
 		}
@@ -636,16 +641,14 @@ func main() {
 	funcC()
 }
 ```
+
 ### (2). method
 
 `method`是附属在一个给定的类型上的，他的语法和函数的声明语法几乎一样，只是在`func`后面增加了一个receiver(也就是method所依从的主体)
 
-```go
-import (
-	"fmt"
-	"math"
-)
+定义结构体的方法一般在receiver处用指针形式（否则的话默认值传递无法修改原值 + 反正支持p.name方式取值也不麻烦）
 
+```go
 type Rectangle struct {
 	width, height float64
 }
@@ -654,86 +657,68 @@ type Circle struct {
 	radius float64
 }
 
-func (r Rectangle) area() float64 {				// method里面可以访问接收者的字段
+func (r Rectangle) area() float64 {					// Rectangle的method
 	return r.width*r.height
 }
 
-func (c Circle) area() float64 {				// 虽然method的名字一样，但是如果接收者不一样，那么method就不一样
-	return c.radius * c.radius * math.Pi
+func (this *Circle) area() float64 {				// *Circle的method, 如果method的接收者不一样，那么method就不一样
+	return this.radius * this.radius * math.Pi
 }
 
 func main() {
 	r1 := Rectangle{12, 2}
-	r2 := Rectangle{9, 4}
-	c1 := Circle{10}
-	c2 := Circle{25}
-
-	fmt.Println("Area of r1 is: ", r1.area())	// 通过.调用method
-	fmt.Println("Area of r2 is: ", r2.area())
-	fmt.Println("Area of c1 is: ", c1.area())
-	fmt.Println("Area of c2 is: ", c2.area())
+	c1 := &Circle{10}
+	fmt.Println("Area of r1 is: ", r1.area())		// 通过.调用method
+    fmt.Println("Area of c1 is: ", c1.area())		// 一般用(*c1).area(), 但也支持c1.area()的方式调用method
 }
 ```
 
 ### (3). 接口
 
-interface是一组method的集合，如果某个类型实现了某个接口类型的所有方法，则称此类型实现了此接口
+* interface是一组method的集合，如果某个类型实现了某个接口类型的所有方法，则称此类型实现了此接口
 
-接口类型的变量能够存储所有实现了该接口的类型的对象
+  接口类型的变量能存储：实现了该接口的类型的值
 
 ```go
+type cat struct{ num int }
 type dog struct{}
 
-type cat struct{}
-
-type Sayer interface {					// 定义一个Sayer接口类型
+type Adder interface { 							// 定义一个Adder接口类型
+	add(a int)
+}
+type Sayer interface { 							// 定义一个Sayer接口类型
 	say()
 }
 
-func (c cat) say() {					// cat实现了Sayer接口
+func (c cat) say() { 							// cat实现了Sayer接口
 	fmt.Println("喵喵喵")
 }
 
-func (d dog) say() {					// dog实现了Sayer接口
+func (d dog) say() { 							// dog实现了Sayer接口
 	fmt.Println("汪汪汪")
 }
+func (c *cat) add(a int) { 						// *cat(cat结构体类型的指针)实现了Adder接口
+	c.num = c.num + a
+}
 
 func main() {
-	var x Sayer 						// 定义一个Sayer接口类型的变量x
-	a := cat{}  						// 定义并初始化一个cat结构体类型的对象a
-	b := dog{}  						// 定义并初始化一个dog结构体类型的对象b
-	x = a       						// 可以把cat结构体类型的对象直接赋值给x
-	x.say()     						// 喵喵喵
-	x = b       						// 可以把dog结构体类型的对象直接赋值给x
-	x.say()     						// 汪汪汪
+	var x Adder 								// 定义一个Adder接口类型的变量x
+    var y Sayer 								// 定义一个Sayer接口类型的变量y
+	a := cat{1} 								// 定义并初始化一个cat结构体类型的对象a
+	b := dog{}  								// 定义并初始化一个dog结构体类型的对象b
+	x = &a      								// 可以把cat结构体类型对象的指针直接赋值给x
+	fmt.Println(x, a)							// &{1} {1}
+	a.add(1)
+	fmt.Println(x, a)							// &{2} {2}
+	y = a       								// 可以把cat结构体类型的对象直接赋值给y
+	y.say()     								// 喵喵喵
+	y = b       								// 可以把dog结构体类型的对象直接赋值给y
+	y.say()     								// 汪汪汪
 }
+
 ```
-
-`interface{}`：空接口，包含0个method的interface，可以被任何类型实现，故可存储任何类型的对象
-
-```go
-var a interface{}						// 定义一个空接口类型的变量a
-
-func main() {
-	var i int = 5
-	s := "Hello world"
-	// a可以存储任意类型的数值
-	a = i
-	fmt.Println(a)
-	a = s
-	fmt.Println(a)
-}
-```
-
-因此，若一个函数把interface{}作为参数，那么他可以接受任意类型的值作为参数，若一个函数返回interface{},那么也就可以返回任意类型的值
-
 ```go
 // 查看文档可知：任何实现了"String() string"方法的类型就实现了fmt.Stringer接口, 从而使此类型可以作为参数被fmt.Println调用
-import (
-	"fmt"
-	"strconv"
-)
-
 type Human struct {
 	name  string
 	age   int
@@ -750,8 +735,48 @@ func main() {
 	fmt.Println(Bob)  // ❰Bob - 39 years -  ✆ 000-7777-XXX❱
 }
 ```
+* 空接口：`interface{}`，包含0个method的interface，可以被任何类型实现，故可存储任何类型的值
 
-我们知道interface的变量里面可以存储任意类型的数值(该类型实现了interface)。那么我们怎么反向知道这个变量里面实际保存了的是哪个类型的对象呢？
+  因此，若一个函数把interface{}作为参数，那么他可以接受任意类型的值作为参数，若一个函数返回interface{},那么也就可以返回任意类型的值
+
+```go
+func myfunc(a interface{}) {
+	fmt.Println("myfunc is running")
+}
+
+func main() {
+	var i int = 5
+	s := "Hello world"
+    var a interface{} 								// 定义一个空接口类型的变量a
+	a = i
+	fmt.Println(a)
+	a = s
+	fmt.Println(a)
+	myfunc(i)
+	myfunc(s)
+}
+```
+
+* 支持嵌套接口
+
+```go
+// 例子一: container/heap包
+type Interface interface {
+		sort.Interface      	// 嵌入字段sort.Interface, 包含了sort.Interface的所有method
+		Push(x interface{}) 	// a Push method to push elements into the heap
+		Pop() interface{}   	// a Pop elements that pops elements from the heap
+	}
+// 例子二: io包
+type ReadWriter interface {
+		Reader					// 嵌入字段Reader, 包含了Reader的所有method
+		Writer					// 嵌入字段Writer, 包含了Writer的所有method
+	}
+```
+
+## 4. 反射
+
+* 变量内置pair：type, value
+* 类型断言：interface的变量里面可以存储任意类型的值(该类型实现了interface)，类型断言可以判断这个变量里面实际保存的是哪个类型的值
 
 ```go
 type Element interface{}
@@ -768,9 +793,9 @@ func (p Person) String() string {
 
 func main() {
 	list := make([]Element, 3)     			// 做一个用来存放Element接口类型数据的，长度为三的切片
-	list[0] = 1                    			// 第一个存: int类型
-	list[1] = "Hello"              			// 第二个存: string类型
-	list[2] = Person{"Dennis", 70} 			// 第三个存: Person类型
+	list[0] = 1                    			// 第一个存: int类型值
+	list[1] = "Hello"              			// 第二个存: string类型值
+	list[2] = Person{"Dennis", 70} 			// 第三个存: Person类型对象
 
 	for i, v := range list { 				// 方法一
 		switch value := v.(type) {
@@ -798,23 +823,58 @@ func main() {
 }
 ```
 
-同结构体一样，支持嵌套接口
+* reflect包
 
 ```go
-// 例子一: container/heap包
-type Interface interface {
-		sort.Interface      	// 嵌入字段sort.Interface, 包含了sort.Interface的所有method
-		Push(x interface{}) 	// a Push method to push elements into the heap
-		Pop() interface{}   	// a Pop elements that pops elements from the heap
+type User struct {
+	Name string `info:"name" doc:"我的名字"`
+	Age  int    `info:"age" doc:"我的年龄"`
+}
+
+func (this User) Call() {
+	fmt.Println("user is called ..")
+}
+
+func main() {
+	user1 := User{"Aceld", 18} 											// 创建User类对象user1, 准备进行解析
+	getFieldAndMethod(user1)
+	getTag(&user1)
+}
+
+func getFieldAndMethod(input interface{}) {
+	// 解析input的type
+	inputType := reflect.TypeOf(input)
+	fmt.Println("inputType is :", inputType.Name()) 					// inputType is : User
+
+	// 解析input的value
+	inputValue := reflect.ValueOf(input)
+	fmt.Println("inputValue is:", inputValue) 							// inputValue is: {Aceld 18}
+
+	// 解析input的所有字段
+	for i := 0; i < inputType.NumField(); i++ {
+		fmt.Printf("%s: %v = %v. ", inputType.Field(i).Name, 			// Name: string = Aceld. Age: int = 18. 
+			inputType.Field(i).Type, inputValue.Field(i).Interface())
 	}
-// 例子二: io包
-type ReadWriter interface {
-		Reader					// 嵌入字段Reader, 包含了Reader的所有method
-		Writer					// 嵌入字段Writer, 包含了Writer的所有method
+
+	// 解析input的所有method
+	for i := 0; i < inputType.NumMethod(); i++ {
+		m := inputType.Method(i)
+		fmt.Printf("\n%s: %v\n", m.Name, m.Type) 						// Call: func(main.User)
 	}
+}
+
+func getTag(input interface{}) {
+	// 解析input的所有tag
+	inputElem := reflect.TypeOf(input).Elem()
+	for i := 0; i < inputElem.NumField(); i++ {
+		taginfo := inputElem.Field(i).Tag.Get("info")
+		tagdoc := inputElem.Field(i).Tag.Get("doc")
+		fmt.Printf("info: %v, doc: %v. ", taginfo, tagdoc)				// info: name, doc: 我的名字. info: age, doc: 我的年龄. 
+	}
+}
 ```
 
-## 4. 包
+## 5. 包
 
 * 可见性：若想在另一个包中引用一个包里的标识符（如变量、常量、类型、函数等）时，该标识符必须是对外可见的，即标识符的首字母大写
 
@@ -842,39 +902,34 @@ type Payer interface {
 * 导入：`import`
 
 ```go
-// 调用这个包的函数时，可以省略前缀的包名：Println("hello world")
+// 1. 调用这个包的函数时，可以省略前缀的包名：Println("hello world")
  import(
      . "fmt"
  )
-// 给这个包起别名：f.Println("hello world")
+// 2. 给这个包起别名：f.Println("hello world")
 import(
      f "fmt"
  )
-// 引入该包，而不直接使用包里面的函数，而是调用了该包里面的init函数
+// 3. 引入该包，而不直接使用包里面的函数，而是调用了该包里面的init函数
 import (
 	    "database/sql"
 	    _ "github.com/ziutek/mymysql/godrv"
 	)
 ```
 
-* 初始化函数：`init()`，执行导入包语句时自动调用，不能在代码中主动调用。执行时机：全局声明之后，`main()`之前
+* 初始化函数：`init()`，执行导入包语句时自动调用，不能在代码中主动调用
+
+  执行时机：全局声明之后，`main()`之前
 
 ![image-20210221232023592](TyporaPics/image-20210221232023592.png)
 
-## 5. 文件
+## 6. 文件
 
 ### (1). 读文件
 
 * 利用bufio
 
 ```go
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
-)
-
 func main() {
     // 打开关闭文件
 	file, err := os.Open("./hello.go")
@@ -907,11 +962,6 @@ func main() {
 * 利用ioutil
 
 ```go
-import (
-	"fmt"
-	"io/ioutil"
-)
-
 func main() {
 	content, err := ioutil.ReadFile("./hello.go")
 	if err != nil {
@@ -927,12 +977,6 @@ func main() {
 * 利用bufio
 
 ```go
-import (
-	"bufio"
-	"fmt"
-	"os"
-)
-
 func main() {
 	file, err := os.OpenFile("xx.txt", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
 	if err != nil {
@@ -941,19 +985,14 @@ func main() {
 	}
 	defer file.Close()
 	writer := bufio.NewWriter(file)
-	writer.WriteString("Golang") 	//将数据先写入缓存
-	writer.Flush()               	//将缓存中的内容写入文件
+	writer.WriteString("Golang") 		// 将数据先写入缓存
+	writer.Flush()               		// 将缓存中的内容写入文件
 }
 ```
 
 * 利用ioutil
 
 ```go
-import (
-	"fmt"
-	"io/ioutil"
-)
-
 func main() {
 	str := "Golang"
 	err := ioutil.WriteFile("./xx.txt", []byte(str), 0666)
@@ -964,9 +1003,15 @@ func main() {
 }
 ```
 
-## 6. 并发编程
+## 7. 并发编程
 
-### (1). goroutine
+### (1). [GPM模型](https://www.jianshu.com/p/fa696563c38a)
+
+![image-20210404230248931](TyporaPics/image-20210404230248931.png)
+
+![image-20210404230432641](TyporaPics/image-20210404230432641.png)
+
+### (2). goroutine
 
 goroutine：用户级线程，是通过Go的runtime管理的，通过`go`关键字调用函数即可开启一个新的goroutine
 
@@ -1004,9 +1049,11 @@ func main() {
 }
 ```
 
-调用 `runtime.GOMAXPROCS(n) `设置同时运行逻辑代码的系统线程的最大数量n，并返回之前的设置。如果n < 1，不会改变当前设置，默认跑满CPU
+`runtime.GOMAXPROCS(n) `：设置同时运行逻辑代码的系统线程的最大数量n，并返回之前的设置。如果n < 1，不会改变当前设置，默认跑满CPU
 
-### (2). channel（引用类型）
+`runtime.Goexit()`：退出当前goroutine
+
+### (3). channel（引用类型）
 
 * Go语言的并发模型是`CSP（Communicating Sequential Processes）`，提倡**通过通信共享内存**
 * goroutine运行在相同的地址空间，因此访问共享内存必须做好同步。Go提供了一个很好的通信机制channel
@@ -1014,7 +1061,7 @@ func main() {
 
 * 定义：
   * `var name chan type`（自动置为nil）
-  * `var name = make(chan type, buflen)`（自动初始化）
+  * `var name = make(chan type, cap)`（自动初始化）
 
 
 * 无缓冲的通道
@@ -1027,19 +1074,38 @@ func recv(ch chan int) {
 
 func main() {
 	ch := make(chan int)			// 创建可发送接收int型数据的无缓冲通道ch
-	go recv(ch) 					// 启用新goroutine从通道接收值，不然无缓冲的通道会在下面阻塞，形成deadlock
+	go recv(ch) 					// 启用新goroutine从通道接收值，不然无缓冲的通道会在下面阻塞后形成deadlock
 	ch <- 10						// 发送数据10到ch中
 	fmt.Println("发送成功")
 }
 ```
 
-* 有缓冲的通道
+* 有缓冲的通道，len()：当前通道里值数量，cap()：通道容量
 
 ```go
 func main() {
-	ch := make(chan int, 1) 		// 创建一个容量为1的有缓冲区通道
-	ch <- 10						// 不会阻塞（此时再发送新的就会阻塞形成deadlock）
-	fmt.Println("发送成功")
+	c := make(chan int, 3) 									// 创建一个容量为3的有缓冲区通道
+
+	fmt.Println("len(c) = ", len(c), ", cap(c)", cap(c))
+
+	go func() {												// 启用新goroutine发送值
+		defer fmt.Println("子go程结束")
+
+		for i := 0; i < 4; i++ {
+			c <- i											// 前三个不会阻塞，第四个会阻塞，直到有数据被接收
+			fmt.Println("子go程正在运行, 发送的元素=", i,
+				" len(c)=", len(c), ", cap(c)=", cap(c))
+		}
+	}()
+
+	time.Sleep(2 * time.Second)
+
+	for i := 0; i < 4; i++ {
+		num := <-c 											// 从c中接收数据，并赋值给num
+		fmt.Println("num = ", num)
+	}
+
+	fmt.Println("main 结束")
 }
 ```
 
@@ -1052,14 +1118,14 @@ func fibonacci(n int, c chan int) {
 		c <- x
 		x, y = y, x+y
 	}
-	close(c)								// 显式关闭channel，之后无法再发送任何数据
+	close(c)								// 显式关闭channel，之后无法再发送任何数据，但可以读取
 }
 
 func main() {
 	c := make(chan int, 10)
-	go fibonacci(cap(c), c)
+	go fibonacci(20, c)
 	for i := range c {						// 能够不断地读取channel里面的数据，直到该channel被显式地关闭
-		fmt.Printf("%d ", i)				// 1 1 2 3 5 8 13 21 34 55 
+		fmt.Printf("%d ", i)				// 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 
 	}
 }
 ```
@@ -1083,23 +1149,39 @@ func main() {
 }
 ```
 
-## 7. 网络编程
+```go
+func fibonacci(c, quit chan int) {
+	x, y := 1, 1
+	for {
+		select {
+		case c <- x:						// c可写，继续迭代
+			x, y = y, x+y
+		case <-quit:						// quit可读，运行结束
+			fmt.Println("quit")
+			return
+		}
+	}
+}
 
-# 二、标准库
+func main() {
+	c := make(chan int)
+	quit := make(chan int)
+    
+	go func() {
+		for i := 0; i < 10; i++ {
+			fmt.Println(<-c)
+		}
 
-## 1. fmt
+		quit <- 0							// 输出完毕，向quit写入元素
+	}()
+    
+	fibonacci(c, quit)
+}
+```
 
-fmt包实现了类似C语言printf和scanf的格式化I/O，主要分为向外输出内容和获取输入内容两大部分
+## 8. 网络编程
 
-### (1). 输入
-
-### (2). 输出
-
-## 2. time
-
-time包提供了时间的显示和测量用的函数，日历的计算采用的是公历
-
-# 三、Gin
+# 二、Gin
 
 ## 1. 引入
 
